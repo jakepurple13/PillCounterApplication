@@ -14,6 +14,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Application
+import com.programmersbox.database.PillWeightDatabase
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.mapNotNull
 import platform.UIKit.UIViewController
 
 public actual fun getPlatformName(): String {
@@ -39,5 +43,19 @@ public fun MainViewController(): UIViewController = Application("PillCounter") {
                 UIShow()
             }
         }
+    }
+}
+
+internal actual class Database actual constructor(scope: CoroutineScope) {
+    private val db = PillWeightDatabase()
+    actual suspend fun list(): Flow<List<PillWeights>> = db.getItems()
+        .mapNotNull { l ->
+            l.map { PillWeights(it.name, it.pillWeight, it.bottleWeight) }
+        }
+    actual suspend fun savePillWeightInfo(pillWeights: PillWeights) {
+        db.saveInfo(pillWeights.name, pillWeights.pillWeight, pillWeights.bottleWeight)
+    }
+    actual suspend fun removePillWeightInfo(pillWeights: PillWeights) {
+        db.removeInfo(pillWeights.name, pillWeights.pillWeight, pillWeights.bottleWeight)
     }
 }
