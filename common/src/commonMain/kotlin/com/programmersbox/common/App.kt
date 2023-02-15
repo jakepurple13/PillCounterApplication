@@ -265,6 +265,7 @@ internal fun NewPill(viewModel: PillViewModel) {
                     ) {
                         Text(viewModel.newPill.pillWeight.toString())
                         Text("Pill Weight (in grams)")
+                        Text("Press to start calibration")
                     }
                 }
 
@@ -282,6 +283,7 @@ internal fun NewPill(viewModel: PillViewModel) {
                     ) {
                         Text(viewModel.newPill.bottleWeight.toString())
                         Text("Bottle Weight (in grams)")
+                        Text("Press to start calibration")
                     }
                 }
             }
