@@ -10,7 +10,7 @@ import io.realm.kotlin.types.RealmList
 import io.realm.kotlin.types.RealmObject
 import io.realm.kotlin.types.annotations.PrimaryKey
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 
@@ -23,13 +23,14 @@ public class PillWeightsDB : RealmObject {
 
 internal class PillWeightConfig : RealmObject {
     var pillWeightList: RealmList<PillWeightsDB> = realmListOf()
+    var url: String = ""
 }
 
 public class PillWeightDatabase {
     private val realm by lazy {
         Realm.open(
             RealmConfiguration.Builder(setOf(PillWeightConfig::class, PillWeightsDB::class))
-                .schemaVersion(1)
+                .schemaVersion(2)
                 .migration(AutomaticSchemaMigration { })
                 .deleteRealmIfMigrationNeeded()
                 .build()
@@ -43,8 +44,13 @@ public class PillWeightDatabase {
 
     public suspend fun getItems(): Flow<List<PillWeightsDB>> = initialDb().asFlow()
         .mapNotNull { it.obj }
-        .distinctUntilChanged()
+        .distinctUntilChangedBy { it.pillWeightList }
         .map { it.pillWeightList.toList() }
+
+    public suspend fun getUrl(): Flow<String> = initialDb().asFlow()
+        .mapNotNull { it.obj }
+        .distinctUntilChangedBy { it.url }
+        .map { it.url }
 
     public suspend fun saveInfo(name: String, pillWeight: Double, bottleWeight: Double) {
         realm.updateInfo<PillWeightConfig> {
@@ -68,6 +74,10 @@ public class PillWeightDatabase {
                 }
             )
         }
+    }
+
+    public suspend fun saveUrl(url: String) {
+        realm.updateInfo<PillWeightConfig> { it?.url = url }
     }
 }
 

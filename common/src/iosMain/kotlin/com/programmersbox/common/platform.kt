@@ -59,8 +59,15 @@ internal actual class Database actual constructor(scope: CoroutineScope) {
     actual suspend fun removePillWeightInfo(pillWeights: PillWeights) {
         db.removeInfo(pillWeights.name, pillWeights.pillWeight, pillWeights.bottleWeight)
     }
+
+    actual suspend fun url(): Flow<String> = db.getUrl()
+    actual suspend fun saveUrl(url: String) = db.saveUrl(url)
 }
 
-internal actual fun doStuff() {
+internal actual fun PillViewModel.doStuff() {
 
+}
+
+internal actual fun DiscoveryViewModel.discover() {
+    discoveredList.add(BuildKonfig.serverLocalIpAddress)
 }

@@ -83,10 +83,15 @@ internal class Network(
 
     fun pillWeightCalibration(): Flow<PillWeights> = flow {
         withTimeout(5000) {
-            while(true) {
+            while (true) {
                 getApi<PillWeights>("$url/pillWeight")?.let { emit(it) }
                 delay(10)
             }
         }
+    }
+
+    fun close() {
+        client.close()
+        websocketClient.close()
     }
 }

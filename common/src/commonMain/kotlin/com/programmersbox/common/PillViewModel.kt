@@ -4,15 +4,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import io.ktor.http.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
-internal class PillViewModel(private val scope: CoroutineScope) {
+internal class PillViewModel(val scope: CoroutineScope) {
 
     private val db = Database(scope)
 
-    private val network = Network()
+    private var network = Network()
 
     var pillCount by mutableStateOf(PillCount(0.0, PillWeights()))
         private set
@@ -26,13 +27,6 @@ internal class PillViewModel(private val scope: CoroutineScope) {
     var isNewPillLoading by mutableStateOf(false)
 
     init {
-        doStuff()
-
-        network.socketConnection()
-            .onEach { println(it) }
-            .onEach { pillCount = it }
-            .launchIn(scope)
-
         scope.launch {
             db.list()
                 .onEach {
@@ -41,12 +35,35 @@ internal class PillViewModel(private val scope: CoroutineScope) {
                 }
                 .launchIn(this)
         }
+
+        scope.launch {
+            db.url()
+                .filter { it.isNotEmpty() }
+                .onEach { connectToNetwork(it) }
+                .launchIn(this)
+        }
+    }
+
+    fun changeNetwork(url: String) {
+        scope.launch { db.saveUrl(url) }
+    }
+
+    private fun connectToNetwork(url: String) {
+        network.close()
+
+        network = Network(Url("http://$url:8080"))
+
+        network.socketConnection()
+            .onEach { println(it) }
+            .onEach { pillCount = it }
+            .launchIn(scope)
     }
 
     fun onDrawerItemClick(pillWeights: PillWeights) {
         when (pillState) {
             PillState.MainScreen -> sendNewConfig(pillWeights)
             PillState.NewPill -> recalibrate(pillWeights)
+            PillState.Discovery -> {}
         }
     }
 
@@ -92,6 +109,10 @@ internal class PillViewModel(private val scope: CoroutineScope) {
         scope.launch { db.savePillWeightInfo(pillWeights) }
     }
 
+    fun removeConfig(pillWeights: PillWeights) {
+        scope.launch { db.removePillWeightInfo(pillWeights) }
+    }
+
     fun showNewPill() {
         pillState = PillState.NewPill
     }
@@ -99,9 +120,14 @@ internal class PillViewModel(private val scope: CoroutineScope) {
     fun showMainScreen() {
         pillState = PillState.MainScreen
     }
+
+    fun showDiscovery() {
+        pillState = PillState.Discovery
+    }
 }
 
 internal sealed class PillState {
     object MainScreen : PillState()
     object NewPill : PillState()
+    object Discovery : PillState()
 }

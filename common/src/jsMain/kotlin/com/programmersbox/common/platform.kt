@@ -18,8 +18,14 @@ internal actual class Database actual constructor(scope: CoroutineScope) {
     actual suspend fun list(): Flow<List<PillWeights>> = flowOf(emptyList())
     actual suspend fun savePillWeightInfo(pillWeights: PillWeights) {}
     actual suspend fun removePillWeightInfo(pillWeights: PillWeights) {}
+    actual suspend fun url(): Flow<String> = flowOf()
+    actual suspend fun saveUrl(url: String) = Unit
 }
 
-internal actual fun doStuff() {
+internal actual fun PillViewModel.doStuff() {
+
+}
+
+internal actual fun DiscoveryViewModel.discover() {
 
 }

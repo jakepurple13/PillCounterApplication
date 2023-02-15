@@ -82,6 +82,7 @@ kotlin {
                 api(compose.preview)
                 api("io.ktor:ktor-client-cio:$ktorVersion")
                 api(projects.database)
+                api("org.jmdns:jmdns:3.5.8")
             }
         }
 
