@@ -20,10 +20,13 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
-internal fun App() {
+internal fun App(
+    backHandler: @Composable (PillViewModel) -> Unit = {}
+) {
     val scope = rememberCoroutineScope()
     val vm = remember { PillViewModel(scope) }
-    //TODO: BackHandler Android only
+
+    backHandler(vm)
 
     Surface {
         val drawerState = rememberDrawerState(DrawerValue.Closed)

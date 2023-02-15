@@ -35,9 +35,12 @@ internal fun DiscoveryScreen(viewModel: PillViewModel) {
         ) {
             items(vm.discoveredList) {
                 OutlinedCard(
-                    onClick = { vm.connect(it) }
+                    onClick = { vm.connect(it.ip) }
                 ) {
-                    ListItem(headlineText = { Text(it) })
+                    ListItem(
+                        headlineText = { Text(it.name) },
+                        supportingText = { Text(it.ip) }
+                    )
                 }
             }
         }
@@ -49,7 +52,7 @@ internal class DiscoveryViewModel(
     private val viewModel: PillViewModel
 ) {
     var isSearching by mutableStateOf(false)
-    val discoveredList = mutableStateListOf<String>()
+    val discoveredList = mutableStateListOf<PillCounterIp>()
 
     fun startDiscovery() {
         if (!isSearching) {
@@ -63,3 +66,5 @@ internal class DiscoveryViewModel(
     }
 
 }
+
+internal data class PillCounterIp(val ip: String, val name: String)

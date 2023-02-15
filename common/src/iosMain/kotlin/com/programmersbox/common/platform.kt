@@ -48,9 +48,7 @@ public fun MainViewController(): UIViewController = Application("PillCounter") {
 internal actual class Database actual constructor(scope: CoroutineScope) {
     private val db = PillWeightDatabase()
     actual suspend fun list(): Flow<List<PillWeights>> = db.getItems()
-        .mapNotNull { l ->
-            l.map { PillWeights(it.name, it.pillWeight, it.bottleWeight) }
-        }
+        .mapNotNull { l -> l.map { PillWeights(it.name, it.pillWeight, it.bottleWeight) } }
 
     actual suspend fun savePillWeightInfo(pillWeights: PillWeights) {
         db.saveInfo(pillWeights.name, pillWeights.pillWeight, pillWeights.bottleWeight)
@@ -69,5 +67,5 @@ internal actual fun PillViewModel.doStuff() {
 }
 
 internal actual fun DiscoveryViewModel.discover() {
-    discoveredList.add(BuildKonfig.serverLocalIpAddress)
+    discoveredList.add(PillCounterIp(BuildKonfig.serverLocalIpAddress, "My Computer"))
 }

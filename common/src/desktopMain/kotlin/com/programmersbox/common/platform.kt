@@ -25,9 +25,7 @@ public fun UIShow() {
 internal actual class Database actual constructor(scope: CoroutineScope) {
     private val db = PillWeightDatabase()
     actual suspend fun list(): Flow<List<PillWeights>> = db.getItems()
-        .mapNotNull { l ->
-            l.map { PillWeights(it.name, it.pillWeight, it.bottleWeight) }
-        }
+        .mapNotNull { l -> l.map { PillWeights(it.name, it.pillWeight, it.bottleWeight) } }
 
     actual suspend fun savePillWeightInfo(pillWeights: PillWeights) {
         db.saveInfo(pillWeights.name, pillWeights.pillWeight, pillWeights.bottleWeight)
@@ -67,7 +65,11 @@ internal actual fun DiscoveryViewModel.discover() {
                     println("Service resolved: " + event.info.inet4Addresses.map { it.hostAddress })
                     //val pillDevices = event.info.inet4Addresses.filter { it.canonicalHostName }
                     //println(pillDevices)
-                    discoveredList.addAll(event.info.inet4Addresses.mapNotNull { it.hostAddress })
+                    discoveredList.addAll(
+                        event.info.inet4Addresses.mapNotNull {
+                            it.hostAddress?.let { it1 -> PillCounterIp(it1, it.hostName) }
+                        }
+                    )
                 }
             }
         )

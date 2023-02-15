@@ -9,22 +9,22 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
-internal class PillViewModel(val scope: CoroutineScope) {
+public class PillViewModel(internal val scope: CoroutineScope) {
 
     private val db = Database(scope)
 
     private var network = Network()
 
-    var pillCount by mutableStateOf(PillCount(0.0, PillWeights()))
+    internal var pillCount by mutableStateOf(PillCount(0.0, PillWeights()))
         private set
 
-    val pillWeightList = mutableStateListOf<PillWeights>()
+    internal val pillWeightList = mutableStateListOf<PillWeights>()
 
-    var pillState: PillState by mutableStateOf(PillState.MainScreen)
+    public var pillState: PillState by mutableStateOf(PillState.MainScreen)
 
-    var newPill by mutableStateOf(PillWeights())
+    internal var newPill by mutableStateOf(PillWeights())
 
-    var isNewPillLoading by mutableStateOf(false)
+    internal var isNewPillLoading by mutableStateOf(false)
 
     init {
         scope.launch {
@@ -44,7 +44,7 @@ internal class PillViewModel(val scope: CoroutineScope) {
         }
     }
 
-    fun changeNetwork(url: String) {
+    internal fun changeNetwork(url: String) {
         scope.launch { db.saveUrl(url) }
     }
 
@@ -59,7 +59,7 @@ internal class PillViewModel(val scope: CoroutineScope) {
             .launchIn(scope)
     }
 
-    fun onDrawerItemClick(pillWeights: PillWeights) {
+    internal fun onDrawerItemClick(pillWeights: PillWeights) {
         when (pillState) {
             PillState.MainScreen -> sendNewConfig(pillWeights)
             PillState.NewPill -> recalibrate(pillWeights)
@@ -71,7 +71,7 @@ internal class PillViewModel(val scope: CoroutineScope) {
         newPill = pillWeights
     }
 
-    fun updatePill(
+    internal fun updatePill(
         name: String = newPill.name,
         pillWeight: Double = newPill.pillWeight,
         bottleWeight: Double = newPill.bottleWeight
@@ -79,7 +79,7 @@ internal class PillViewModel(val scope: CoroutineScope) {
         newPill = newPill.copy(name = name, bottleWeight = bottleWeight, pillWeight = pillWeight)
     }
 
-    fun calibratePillWeight() {
+    internal fun calibratePillWeight() {
         network.pillWeightCalibration()
             .onStart { isNewPillLoading = true }
             .onEach { updatePill(pillWeight = it.pillWeight) }
@@ -88,7 +88,7 @@ internal class PillViewModel(val scope: CoroutineScope) {
             .launchIn(scope)
     }
 
-    fun calibrateBottleWeight() {
+    internal fun calibrateBottleWeight() {
         network.pillWeightCalibration()
             .onStart { isNewPillLoading = true }
             .onEach { updatePill(bottleWeight = it.bottleWeight) }
@@ -97,7 +97,7 @@ internal class PillViewModel(val scope: CoroutineScope) {
             .launchIn(scope)
     }
 
-    fun sendNewConfig(pillWeights: PillWeights) {
+    internal fun sendNewConfig(pillWeights: PillWeights) {
         scope.launch {
             network.updateConfig(pillWeights)
                 .onSuccess { println(it) }
@@ -105,29 +105,29 @@ internal class PillViewModel(val scope: CoroutineScope) {
         }
     }
 
-    fun saveNewConfig(pillWeights: PillWeights) {
+    internal fun saveNewConfig(pillWeights: PillWeights) {
         scope.launch { db.savePillWeightInfo(pillWeights) }
     }
 
-    fun removeConfig(pillWeights: PillWeights) {
+    internal fun removeConfig(pillWeights: PillWeights) {
         scope.launch { db.removePillWeightInfo(pillWeights) }
     }
 
-    fun showNewPill() {
+    internal fun showNewPill() {
         pillState = PillState.NewPill
     }
 
-    fun showMainScreen() {
+    public fun showMainScreen() {
         pillState = PillState.MainScreen
     }
 
-    fun showDiscovery() {
+    internal fun showDiscovery() {
         pillState = PillState.Discovery
     }
 }
 
-internal sealed class PillState {
-    object MainScreen : PillState()
-    object NewPill : PillState()
-    object Discovery : PillState()
+public sealed class PillState {
+    public object MainScreen : PillState()
+    public object NewPill : PillState()
+    public object Discovery : PillState()
 }
