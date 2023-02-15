@@ -21,10 +21,16 @@ internal actual class Database actual constructor(scope: CoroutineScope) {
         .mapNotNull { l ->
             l.map { PillWeights(it.name, it.pillWeight, it.bottleWeight) }
         }
+
     actual suspend fun savePillWeightInfo(pillWeights: PillWeights) {
         db.saveInfo(pillWeights.name, pillWeights.pillWeight, pillWeights.bottleWeight)
     }
+
     actual suspend fun removePillWeightInfo(pillWeights: PillWeights) {
         db.removeInfo(pillWeights.name, pillWeights.pillWeight, pillWeights.bottleWeight)
     }
+}
+
+internal actual fun doStuff() {
+
 }

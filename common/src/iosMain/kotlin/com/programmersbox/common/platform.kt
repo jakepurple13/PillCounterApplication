@@ -1,15 +1,14 @@
 package com.programmersbox.common
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
-import androidx.compose.material3.ColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -52,10 +51,16 @@ internal actual class Database actual constructor(scope: CoroutineScope) {
         .mapNotNull { l ->
             l.map { PillWeights(it.name, it.pillWeight, it.bottleWeight) }
         }
+
     actual suspend fun savePillWeightInfo(pillWeights: PillWeights) {
         db.saveInfo(pillWeights.name, pillWeights.pillWeight, pillWeights.bottleWeight)
     }
+
     actual suspend fun removePillWeightInfo(pillWeights: PillWeights) {
         db.removeInfo(pillWeights.name, pillWeights.pillWeight, pillWeights.bottleWeight)
     }
+}
+
+internal actual fun doStuff() {
+
 }

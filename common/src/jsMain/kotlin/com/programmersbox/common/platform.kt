@@ -19,3 +19,7 @@ internal actual class Database actual constructor(scope: CoroutineScope) {
     actual suspend fun savePillWeightInfo(pillWeights: PillWeights) {}
     actual suspend fun removePillWeightInfo(pillWeights: PillWeights) {}
 }
+
+internal actual fun doStuff() {
+
+}

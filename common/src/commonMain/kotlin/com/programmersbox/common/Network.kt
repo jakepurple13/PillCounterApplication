@@ -15,7 +15,9 @@ import kotlinx.coroutines.flow.*
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
-internal object Network {
+internal class Network(
+    private val url: Url = Url("http://${BuildKonfig.serverLocalIpAddress}:8080")
+) {
 
     private val json = Json {
         isLenient = true
@@ -25,6 +27,10 @@ internal object Network {
     }
 
     private val client = HttpClient {
+        install(ContentNegotiation) { json(json) }
+    }
+
+    private val websocketClient = HttpClient {
         install(ContentNegotiation) { json(json) }
         install(WebSockets) { contentConverter = KotlinxWebsocketSerializationConverter(json) }
     }
@@ -46,7 +52,7 @@ internal object Network {
     }
 
     suspend fun updateConfig(pillWeights: PillWeights) = runCatching {
-        postApi<PillWeights>("http://0.0.0.0:8080/weight") {
+        postApi<PillWeights>("$url/weight") {
             contentType(ContentType.Application.Json)
             setBody(pillWeights)
         }
@@ -55,7 +61,7 @@ internal object Network {
     fun socketConnection(): Flow<PillCount> {
         val updateFlow = MutableSharedFlow<PillCount>()
         CoroutineScope(Job()).launch {
-            client.ws(method = HttpMethod.Get, host = "0.0.0.0", port = 8080, path = "/ws") {
+            websocketClient.ws(method = HttpMethod.Get, host = url.host, port = url.port, path = "/ws") {
                 incoming
                     .consumeAsFlow()
                     .filterIsInstance<Frame.Text>()
@@ -78,7 +84,7 @@ internal object Network {
     fun pillWeightCalibration(): Flow<PillWeights> = flow {
         withTimeout(5000) {
             while(true) {
-                getApi<PillWeights>("http://0.0.0.0:8080/pillWeight")?.let { emit(it) }
+                getApi<PillWeights>("$url/pillWeight")?.let { emit(it) }
                 delay(10)
             }
         }

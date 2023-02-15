@@ -10,3 +10,5 @@ internal expect class Database(scope: CoroutineScope) {
     suspend fun savePillWeightInfo(pillWeights: PillWeights)
     suspend fun removePillWeightInfo(pillWeights: PillWeights)
 }
+
+internal expect fun doStuff()

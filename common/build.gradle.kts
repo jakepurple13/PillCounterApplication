@@ -1,9 +1,13 @@
+import java.net.InetAddress
+import java.net.NetworkInterface
+
 plugins {
     kotlin("multiplatform")
     id("org.jetbrains.compose")
     id("com.android.library")
     kotlin("native.cocoapods")
     id("kotlinx-serialization")
+    id("com.codingfeline.buildkonfig")
 }
 
 group = "com.programmersbox"
@@ -46,6 +50,7 @@ kotlin {
                 api("io.ktor:ktor-client-content-negotiation:$ktorVersion")
                 api("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
                 api("io.ktor:ktor-client-logging:$ktorVersion")
+                api("io.ktor:ktor-client-websockets:$ktorVersion")
             }
         }
 
@@ -59,8 +64,10 @@ kotlin {
             dependencies {
                 api("androidx.appcompat:appcompat:1.6.0")
                 api("androidx.core:core-ktx:1.9.0")
-                api("io.ktor:ktor-client-android:$ktorVersion")
+                //api("io.ktor:ktor-client-android:$ktorVersion")
+                api("io.ktor:ktor-client-cio:$ktorVersion")
                 api(projects.database)
+                api("org.jmdns:jmdns:3.5.8")
             }
         }
 
@@ -114,5 +121,36 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
+    }
+}
+
+fun getIP(): String {
+    var result: InetAddress? = null
+    val interfaces = NetworkInterface.getNetworkInterfaces()
+    while (interfaces.hasMoreElements()) {
+        val addresses = interfaces.nextElement().inetAddresses
+        while (addresses.hasMoreElements()) {
+            val address = addresses.nextElement()
+            if (!address.isLoopbackAddress) {
+                if (address.isSiteLocalAddress) {
+                    return address.hostAddress
+                } else if (result == null) {
+                    result = address
+                }
+            }
+        }
+    }
+    return (result ?: InetAddress.getLocalHost()).hostAddress
+}
+
+buildkonfig {
+    packageName = "com.programmersbox.common"
+
+    defaultConfigs {
+        buildConfigField(
+            com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING,
+            "serverLocalIpAddress",
+            getIP()
+        )
     }
 }

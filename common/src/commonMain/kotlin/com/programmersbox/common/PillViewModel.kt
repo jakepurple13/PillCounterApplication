@@ -12,6 +12,8 @@ internal class PillViewModel(private val scope: CoroutineScope) {
 
     private val db = Database(scope)
 
+    private val network = Network()
+
     var pillCount by mutableStateOf(PillCount(0.0, PillWeights()))
         private set
 
@@ -24,7 +26,9 @@ internal class PillViewModel(private val scope: CoroutineScope) {
     var isNewPillLoading by mutableStateOf(false)
 
     init {
-        Network.socketConnection()
+        doStuff()
+
+        network.socketConnection()
             .onEach { println(it) }
             .onEach { pillCount = it }
             .launchIn(scope)
@@ -46,7 +50,7 @@ internal class PillViewModel(private val scope: CoroutineScope) {
         }
     }
 
-    fun recalibrate(pillWeights: PillWeights) {
+    private fun recalibrate(pillWeights: PillWeights) {
         newPill = pillWeights
     }
 
@@ -59,7 +63,7 @@ internal class PillViewModel(private val scope: CoroutineScope) {
     }
 
     fun calibratePillWeight() {
-        Network.pillWeightCalibration()
+        network.pillWeightCalibration()
             .onStart { isNewPillLoading = true }
             .onEach { updatePill(pillWeight = it.pillWeight) }
             .onCompletion { isNewPillLoading = false }
@@ -68,7 +72,7 @@ internal class PillViewModel(private val scope: CoroutineScope) {
     }
 
     fun calibrateBottleWeight() {
-        Network.pillWeightCalibration()
+        network.pillWeightCalibration()
             .onStart { isNewPillLoading = true }
             .onEach { updatePill(bottleWeight = it.bottleWeight) }
             .onCompletion { isNewPillLoading = false }
@@ -78,7 +82,7 @@ internal class PillViewModel(private val scope: CoroutineScope) {
 
     fun sendNewConfig(pillWeights: PillWeights) {
         scope.launch {
-            Network.updateConfig(pillWeights)
+            network.updateConfig(pillWeights)
                 .onSuccess { println(it) }
                 .onFailure { it.printStackTrace() }
         }
