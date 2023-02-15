@@ -24,7 +24,7 @@ internal object Network {
         coerceInputValues = true
     }
 
-    val client = HttpClient {
+    private val client = HttpClient {
         install(ContentNegotiation) { json(json) }
         install(WebSockets) { contentConverter = KotlinxWebsocketSerializationConverter(json) }
     }
