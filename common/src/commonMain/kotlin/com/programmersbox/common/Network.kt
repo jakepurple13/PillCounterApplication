@@ -10,8 +10,9 @@ import io.ktor.http.*
 import io.ktor.serialization.kotlinx.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.websocket.*
-import kotlinx.coroutines.*
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.withTimeout
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
@@ -58,9 +59,8 @@ internal class Network(
         }
     }
 
-    fun socketConnection(): Flow<PillCount> {
-        val updateFlow = MutableSharedFlow<PillCount>()
-        CoroutineScope(Job()).launch {
+    fun socketConnection(): Flow<Result<PillCount>> = flow {
+        try {
             websocketClient.ws(method = HttpMethod.Get, host = url.host, port = url.port, path = "/ws") {
                 incoming
                     .consumeAsFlow()
@@ -74,11 +74,13 @@ internal class Network(
                             null
                         }
                     }
-                    .onEach { updateFlow.emit(it) }
+                    .onEach { emit(Result.success(it)) }
                     .collect()
             }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emit(Result.failure(e))
         }
-        return updateFlow
     }
 
     fun pillWeightCalibration(): Flow<PillWeights> = flow {

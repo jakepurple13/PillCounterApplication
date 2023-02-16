@@ -32,6 +32,7 @@ internal fun App(
         val drawerState = rememberDrawerState(DrawerValue.Closed)
         ModalNavigationDrawer(
             drawerState = drawerState,
+            gesturesEnabled = vm.pillState != PillState.Error && vm.pillState != PillState.Discovery,
             drawerContent = {
                 ModalDrawerSheet {
                     Scaffold(
@@ -54,7 +55,7 @@ internal fun App(
                                             when (vm.pillState) {
                                                 PillState.MainScreen -> vm.showNewPill()
                                                 PillState.NewPill -> vm.showMainScreen()
-                                                PillState.Discovery -> {}
+                                                else -> {}
                                             }
                                         },
                                         icon = {
@@ -62,7 +63,7 @@ internal fun App(
                                                 when (vm.pillState) {
                                                     PillState.MainScreen -> Icons.Default.Add
                                                     PillState.NewPill -> Icons.Default.Medication
-                                                    PillState.Discovery -> Icons.Default.NetworkCheck
+                                                    else -> Icons.Default.NetworkCheck
                                                 },
                                                 null
                                             )
@@ -72,7 +73,7 @@ internal fun App(
                                                 when (vm.pillState) {
                                                     PillState.MainScreen -> "Add New Pill"
                                                     PillState.NewPill -> "Return to Home Screen"
-                                                    PillState.Discovery -> ""
+                                                    else -> ""
                                                 }
                                             )
                                         }
@@ -199,8 +200,62 @@ internal fun App(
                             PillState.MainScreen -> MainScreen(vm)
                             PillState.NewPill -> NewPill(vm)
                             PillState.Discovery -> DiscoveryScreen(vm)
+                            PillState.Error -> ErrorScreen(vm)
                         }
                     }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+internal fun BoxScope.ErrorScreen(viewModel: PillViewModel) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .align(Alignment.Center),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.SpaceEvenly
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceEvenly
+        ) {
+            Icon(
+                Icons.Default.Warning,
+                null,
+                tint = MaterialTheme.colorScheme.error
+            )
+            Text("Something went wrong with the connection")
+            Button(onClick = { viewModel.showDiscovery() }) {
+                Text("Find Pill Counter")
+            }
+        }
+        OutlinedCard {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceEvenly
+            ) {
+                Text("Last Accessed")
+                Text(viewModel.pillCount.pillWeights.name)
+                Text(
+                    "${viewModel.pillCount.count} pills",
+                    style = MaterialTheme.typography.titleLarge
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        "Pill Weight: ${viewModel.pillCount.pillWeights.pillWeight}",
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text(
+                        "Bottle Weight: ${viewModel.pillCount.pillWeights.bottleWeight}",
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.weight(1f)
+                    )
                 }
             }
         }

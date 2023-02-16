@@ -9,7 +9,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
-public class PillViewModel(internal val scope: CoroutineScope) {
+public class PillViewModel(private val scope: CoroutineScope) {
 
     private val db = Database(scope)
 
@@ -55,7 +55,11 @@ public class PillViewModel(internal val scope: CoroutineScope) {
 
         network!!.socketConnection()
             .onEach { println(it) }
-            .onEach { pillCount = it }
+            .onEach { result ->
+                result
+                    .onSuccess { pillCount = it }
+                    .onFailure { pillState = PillState.Error }
+            }
             .launchIn(scope)
     }
 
@@ -63,7 +67,7 @@ public class PillViewModel(internal val scope: CoroutineScope) {
         when (pillState) {
             PillState.MainScreen -> sendNewConfig(pillWeights)
             PillState.NewPill -> recalibrate(pillWeights)
-            PillState.Discovery -> {}
+            else -> {}
         }
     }
 
@@ -130,4 +134,5 @@ public sealed class PillState {
     public object MainScreen : PillState()
     public object NewPill : PillState()
     public object Discovery : PillState()
+    public object Error : PillState()
 }
