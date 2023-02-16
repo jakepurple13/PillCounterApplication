@@ -71,6 +71,10 @@ public class PillViewModel(private val scope: CoroutineScope) {
                     }
                     .onFailure { pillState = PillState.Error }
             }
+            .catch {
+                it.printStackTrace()
+                emit(Result.failure(it))
+            }
             .launchIn(scope)
     }
 

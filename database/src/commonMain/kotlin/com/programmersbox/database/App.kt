@@ -23,14 +23,23 @@ public class PillWeightsDB : RealmObject {
 
 internal class PillWeightConfig : RealmObject {
     var pillWeightList: RealmList<PillWeightsDB> = realmListOf()
+}
+
+internal class PillCounterServerConfig : RealmObject {
     var url: String = ""
 }
 
 public class PillWeightDatabase {
     private val realm by lazy {
         Realm.open(
-            RealmConfiguration.Builder(setOf(PillWeightConfig::class, PillWeightsDB::class))
-                .schemaVersion(12)
+            RealmConfiguration.Builder(
+                setOf(
+                    PillWeightConfig::class,
+                    PillWeightsDB::class,
+                    PillCounterServerConfig::class
+                )
+            )
+                .schemaVersion(20)
                 .migration(AutomaticSchemaMigration { })
                 .deleteRealmIfMigrationNeeded()
                 .build()
@@ -47,12 +56,17 @@ public class PillWeightDatabase {
         return f ?: realm.write { copyToRealm(PillWeightsDB()) }
     }
 
+    private suspend fun serverConfigDb(): PillCounterServerConfig {
+        val f = realm.query(PillCounterServerConfig::class).first().find()
+        return f ?: realm.write { copyToRealm(PillCounterServerConfig()) }
+    }
+
     public suspend fun getItems(): Flow<List<PillWeightsDB>> = initialDb().asFlow()
         .mapNotNull { it.obj }
         .distinctUntilChangedBy { it.pillWeightList }
         .map { it.pillWeightList.toList() }
 
-    public suspend fun getUrl(): Flow<String> = initialDb().asFlow()
+    public suspend fun getUrl(): Flow<String> = serverConfigDb().asFlow()
         .mapNotNull { it.obj }
         .distinctUntilChangedBy { it.url }
         .map { it.url }
@@ -112,13 +126,13 @@ public class PillWeightDatabase {
     }
 
     public suspend fun removeInfo(uuid: String) {
-        realm.updateInfo<PillWeightConfig> {
-            it?.pillWeightList?.removeAll { it.uuid == uuid }
+        realm.updateInfo<PillWeightConfig> { pills ->
+            pills?.pillWeightList?.removeAll { it.uuid == uuid }
         }
     }
 
     public suspend fun saveUrl(url: String) {
-        realm.updateInfo<PillWeightConfig> { it?.url = url }
+        realm.updateInfo<PillCounterServerConfig> { it?.url = url }
     }
 }
 

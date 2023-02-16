@@ -60,33 +60,29 @@ internal class Network(
     }
 
     fun socketConnection(): Flow<Result<PillCount>> = flow {
-        try {
-            websocketClient.ws(method = HttpMethod.Get, host = url.host, port = url.port, path = "/ws") {
-                incoming
-                    .consumeAsFlow()
-                    .filterIsInstance<Frame.Text>()
-                    .map { it.readText() }
-                    .mapNotNull { text ->
-                        try {
-                            json.decodeFromString<PillCount>(text)
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            null
-                        }
+        websocketClient.ws(method = HttpMethod.Get, host = url.host, port = url.port, path = "/ws") {
+            incoming
+                .consumeAsFlow()
+                .filterIsInstance<Frame.Text>()
+                .map { it.readText() }
+                .mapNotNull { text ->
+                    try {
+                        json.decodeFromString<PillCount>(text)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        null
                     }
-                    .onEach { emit(Result.success(it)) }
-                    .collect()
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            emit(Result.failure(e))
+                }
+                .onEach { emit(Result.success(it)) }
+                .collect()
         }
     }
 
     fun pillWeightCalibration(): Flow<PillWeights> = flow {
         withTimeout(5000) {
             while (true) {
-                getApi<PillWeights>("$url/pillWeight")?.let { emit(it) }
+                runCatching { getApi<PillWeights>("$url/pillWeight") }.getOrNull()
+                    ?.let { emit(it) }
                 delay(10)
             }
         }
