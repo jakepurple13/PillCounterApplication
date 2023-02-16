@@ -15,8 +15,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Application
 import com.programmersbox.database.PillWeightDatabase
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.launch
 import platform.UIKit.UIViewController
 
 public actual fun getPlatformName(): String {
@@ -28,18 +31,25 @@ private fun UIShow() {
     App()
 }
 
-public fun MainViewController(): UIViewController = Application("PillCounter") {
-    MaterialTheme(
-        colorScheme = if (isSystemInDarkTheme()) darkColorScheme() else lightColorScheme()
-    ) {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
+internal var discoverAction: ((List<IpInfo>) -> Unit) -> Unit = {}
+
+public fun MainViewController(
+    actionOnDiscover: ((List<IpInfo>) -> Unit) -> Unit = {}
+): UIViewController {
+    discoverAction = actionOnDiscover
+    return Application("PillCounter") {
+        MaterialTheme(
+            colorScheme = if (isSystemInDarkTheme()) darkColorScheme() else lightColorScheme()
         ) {
-            Column(
+            Surface(
                 modifier = Modifier.fillMaxSize(),
             ) {
-                Spacer(Modifier.height(30.dp))
-                UIShow()
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                ) {
+                    Spacer(Modifier.height(30.dp))
+                    UIShow()
+                }
             }
         }
     }
@@ -62,10 +72,17 @@ internal actual class Database actual constructor(scope: CoroutineScope) {
     actual suspend fun saveUrl(url: String) = db.saveUrl(url)
 }
 
-internal actual fun PillViewModel.doStuff() {
-
-}
-
 internal actual fun DiscoveryViewModel.discover() {
-    discoveredList.add(PillCounterIp(BuildKonfig.serverLocalIpAddress, "My Computer"))
+    isSearching = true
+    scope.launch {
+        async {
+            discoverAction { list ->
+                discoveredList.addAll(list.map { PillCounterIp(it.host, it.name) }.distinct())
+            }
+        }.await()
+        delay(30000)
+        isSearching = false
+    }
 }
+
+public class IpInfo(public val name: String, public val host: String)

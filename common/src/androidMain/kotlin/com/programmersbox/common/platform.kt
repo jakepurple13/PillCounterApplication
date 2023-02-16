@@ -42,34 +42,6 @@ internal actual class Database actual constructor(scope: CoroutineScope) {
     actual suspend fun saveUrl(url: String) = db.saveUrl(url)
 }
 
-internal actual fun PillViewModel.doStuff() {
-    scope.launch(Dispatchers.IO) {
-        val jmdns = JmDNS.create(InetAddress.getByName("10.0.0.2"), "HOST")
-        jmdns.addServiceListener(
-            "_http._tcp.local.",
-            object : ServiceListener {
-                override fun serviceAdded(event: ServiceEvent) {
-                    println("Service added: " + event.info)
-                }
-
-                override fun serviceRemoved(event: ServiceEvent) {
-                    println("Service removed: " + event.info)
-                }
-
-                override fun serviceResolved(event: ServiceEvent) {
-                    println("Service resolved: " + event.info.inet4Addresses)
-                    println("Service resolved: " + event.info.inet4Addresses.map { it.hostName })
-                    println("Service resolved: " + event.info.inet4Addresses.map { it.hostAddress })
-                    //val pillDevices = event.info.inet4Addresses.filter { it.canonicalHostName }
-                    //println(pillDevices)
-                }
-            }
-        )
-        delay(30000)
-        jmdns.unregisterAllServices()
-    }
-}
-
 
 internal actual fun DiscoveryViewModel.discover() {
     isSearching = true
@@ -79,17 +51,17 @@ internal actual fun DiscoveryViewModel.discover() {
             "_http._tcp.local.",
             object : ServiceListener {
                 override fun serviceAdded(event: ServiceEvent) {
-                    println("Service added: " + event.info)
+                    //println("Service added: " + event.info)
                 }
 
                 override fun serviceRemoved(event: ServiceEvent) {
-                    println("Service removed: " + event.info)
+                    //println("Service removed: " + event.info)
                 }
 
                 override fun serviceResolved(event: ServiceEvent) {
-                    println("Service resolved: " + event.info.inet4Addresses)
-                    println("Service resolved: " + event.info.inet4Addresses.map { it.hostName })
-                    println("Service resolved: " + event.info.inet4Addresses.map { it.hostAddress })
+                    //println("Service resolved: " + event.info.inet4Addresses)
+                    //println("Service resolved: " + event.info.inet4Addresses.map { it.hostName })
+                    //println("Service resolved: " + event.info.inet4Addresses.map { it.hostAddress })
                     //val pillDevices = event.info.inet4Addresses.filter { it.canonicalHostName }
                     //println(pillDevices)
                     discoveredList.addAll(

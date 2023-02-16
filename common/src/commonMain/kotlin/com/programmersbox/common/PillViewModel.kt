@@ -13,7 +13,7 @@ public class PillViewModel(internal val scope: CoroutineScope) {
 
     private val db = Database(scope)
 
-    private var network = Network()
+    private var network: Network? = null
 
     internal var pillCount by mutableStateOf(PillCount(0.0, PillWeights()))
         private set
@@ -49,11 +49,11 @@ public class PillViewModel(internal val scope: CoroutineScope) {
     }
 
     private fun connectToNetwork(url: String) {
-        network.close()
+        network?.close()
 
         network = Network(Url("http://$url:8080"))
 
-        network.socketConnection()
+        network!!.socketConnection()
             .onEach { println(it) }
             .onEach { pillCount = it }
             .launchIn(scope)
@@ -80,28 +80,28 @@ public class PillViewModel(internal val scope: CoroutineScope) {
     }
 
     internal fun calibratePillWeight() {
-        network.pillWeightCalibration()
-            .onStart { isNewPillLoading = true }
-            .onEach { updatePill(pillWeight = it.pillWeight) }
-            .onCompletion { isNewPillLoading = false }
-            .catch { it.printStackTrace() }
-            .launchIn(scope)
+        network?.pillWeightCalibration()
+            ?.onStart { isNewPillLoading = true }
+            ?.onEach { updatePill(pillWeight = it.pillWeight) }
+            ?.onCompletion { isNewPillLoading = false }
+            ?.catch { it.printStackTrace() }
+            ?.launchIn(scope)
     }
 
     internal fun calibrateBottleWeight() {
-        network.pillWeightCalibration()
-            .onStart { isNewPillLoading = true }
-            .onEach { updatePill(bottleWeight = it.bottleWeight) }
-            .onCompletion { isNewPillLoading = false }
-            .catch { it.printStackTrace() }
-            .launchIn(scope)
+        network?.pillWeightCalibration()
+            ?.onStart { isNewPillLoading = true }
+            ?.onEach { updatePill(bottleWeight = it.bottleWeight) }
+            ?.onCompletion { isNewPillLoading = false }
+            ?.catch { it.printStackTrace() }
+            ?.launchIn(scope)
     }
 
     internal fun sendNewConfig(pillWeights: PillWeights) {
         scope.launch {
-            network.updateConfig(pillWeights)
-                .onSuccess { println(it) }
-                .onFailure { it.printStackTrace() }
+            network?.updateConfig(pillWeights)
+                ?.onSuccess { println(it) }
+                ?.onFailure { it.printStackTrace() }
         }
     }
 

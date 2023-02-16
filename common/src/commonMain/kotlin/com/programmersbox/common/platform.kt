@@ -13,5 +13,4 @@ internal expect class Database(scope: CoroutineScope) {
     suspend fun removePillWeightInfo(pillWeights: PillWeights)
 }
 
-internal expect fun PillViewModel.doStuff()
 internal expect fun DiscoveryViewModel.discover()

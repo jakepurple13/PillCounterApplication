@@ -22,10 +22,6 @@ internal actual class Database actual constructor(scope: CoroutineScope) {
     actual suspend fun saveUrl(url: String) = Unit
 }
 
-internal actual fun PillViewModel.doStuff() {
-
-}
-
 internal actual fun DiscoveryViewModel.discover() {
 
 }

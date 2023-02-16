@@ -3,6 +3,7 @@ package com.programmersbox.common
 import androidx.compose.animation.*
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -58,7 +59,8 @@ internal fun DiscoveryScreen(viewModel: PillViewModel) {
         }
     ) { padding ->
         LazyColumn(
-            contentPadding = padding
+            contentPadding = padding,
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             items(vm.discoveredList) {
                 OutlinedCard(
@@ -115,6 +117,7 @@ internal class DiscoveryViewModel(
 
     fun startDiscovery() {
         if (!isSearching) {
+            discoveredList.clear()
             discover()
         }
     }

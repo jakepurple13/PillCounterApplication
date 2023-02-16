@@ -1,15 +1,21 @@
-// !$*UTF8*$
+// !$*UTF8*$!
 {
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		058557BB273AAA24004C7B11 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 058557BA273AAA24004C7B11 /* Assets.xcassets */; };
 		058557D9273AAEEB004C7B11 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 058557D8273AAEEB004C7B11 /* Preview Assets.xcassets */; };
 		2152FB042600AC8F00CF470E /* iOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2152FB032600AC8F00CF470E /* iOSApp.swift */; };
+		7835D583299D6FBC00346711 /* GCXMulticastDNSKit in Frameworks */ = {isa = PBXBuildFile; productRef = 7835D582299D6FBC00346711 /* GCXMulticastDNSKit */; };
+		7835D586299D753600346711 /* RxGCXMulticastDNSKit in Frameworks */ = {isa = PBXBuildFile; productRef = 7835D585299D753600346711 /* RxGCXMulticastDNSKit */; };
+		7835D589299E47CE00346711 /* RxBlocking in Frameworks */ = {isa = PBXBuildFile; productRef = 7835D588299E47CE00346711 /* RxBlocking */; };
+		7835D58B299E47CE00346711 /* RxCocoa in Frameworks */ = {isa = PBXBuildFile; productRef = 7835D58A299E47CE00346711 /* RxCocoa */; };
+		7835D58D299E47CE00346711 /* RxSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 7835D58C299E47CE00346711 /* RxSwift */; };
+		7835D590299E521100346711 /* Bonjour in Frameworks */ = {isa = PBXBuildFile; productRef = 7835D58F299E521100346711 /* Bonjour */; };
 		8FC7143B946BFB03EB56A013 /* Pods_iosApp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5812497FE9EF937F4A6590A4 /* Pods_iosApp.framework */; };
 /* End PBXBuildFile section */
 
@@ -42,7 +48,13 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7835D58D299E47CE00346711 /* RxSwift in Frameworks */,
+				7835D586299D753600346711 /* RxGCXMulticastDNSKit in Frameworks */,
+				7835D589299E47CE00346711 /* RxBlocking in Frameworks */,
+				7835D58B299E47CE00346711 /* RxCocoa in Frameworks */,
 				8FC7143B946BFB03EB56A013 /* Pods_iosApp.framework in Frameworks */,
+				7835D590299E521100346711 /* Bonjour in Frameworks */,
+				7835D583299D6FBC00346711 /* GCXMulticastDNSKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -100,7 +112,6 @@
 				5F6E07CC5702DD48326778A7 /* Pods-iosApp.debug.xcconfig */,
 				8347BF9A747C3EE5E22BC3C8 /* Pods-iosApp.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -123,6 +134,14 @@
 			dependencies = (
 			);
 			name = iosApp;
+			packageProductDependencies = (
+				7835D582299D6FBC00346711 /* GCXMulticastDNSKit */,
+				7835D585299D753600346711 /* RxGCXMulticastDNSKit */,
+				7835D588299E47CE00346711 /* RxBlocking */,
+				7835D58A299E47CE00346711 /* RxCocoa */,
+				7835D58C299E47CE00346711 /* RxSwift */,
+				7835D58F299E521100346711 /* Bonjour */,
+			);
 			productName = iosApp;
 			productReference = 7555FF7B242A565900829871 /* iosApp.app */;
 			productType = "com.apple.product-type.application";
@@ -151,6 +170,12 @@
 				Base,
 			);
 			mainGroup = 7555FF72242A565900829871;
+			packageReferences = (
+				7835D581299D6FBC00346711 /* XCRemoteSwiftPackageReference "GCXMulticastDNSKit" */,
+				7835D584299D753600346711 /* XCRemoteSwiftPackageReference "RxGCXMulticastDNSKit" */,
+				7835D587299E47CE00346711 /* XCRemoteSwiftPackageReference "RxSwift" */,
+				7835D58E299E521100346711 /* XCRemoteSwiftPackageReference "Bonjour" */,
+			);
 			productRefGroup = 7555FF7C242A565900829871 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -418,6 +443,74 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		7835D581299D6FBC00346711 /* XCRemoteSwiftPackageReference "GCXMulticastDNSKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/grandcentrix/GCXMulticastDNSKit";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
+		7835D584299D753600346711 /* XCRemoteSwiftPackageReference "RxGCXMulticastDNSKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/grandcentrix/RxGCXMulticastDNSKit";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
+		7835D587299E47CE00346711 /* XCRemoteSwiftPackageReference "RxSwift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/ReactiveX/RxSwift";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+		7835D58E299E521100346711 /* XCRemoteSwiftPackageReference "Bonjour" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/PureSwift/Bonjour";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		7835D582299D6FBC00346711 /* GCXMulticastDNSKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 7835D581299D6FBC00346711 /* XCRemoteSwiftPackageReference "GCXMulticastDNSKit" */;
+			productName = GCXMulticastDNSKit;
+		};
+		7835D585299D753600346711 /* RxGCXMulticastDNSKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 7835D584299D753600346711 /* XCRemoteSwiftPackageReference "RxGCXMulticastDNSKit" */;
+			productName = RxGCXMulticastDNSKit;
+		};
+		7835D588299E47CE00346711 /* RxBlocking */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 7835D587299E47CE00346711 /* XCRemoteSwiftPackageReference "RxSwift" */;
+			productName = RxBlocking;
+		};
+		7835D58A299E47CE00346711 /* RxCocoa */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 7835D587299E47CE00346711 /* XCRemoteSwiftPackageReference "RxSwift" */;
+			productName = RxCocoa;
+		};
+		7835D58C299E47CE00346711 /* RxSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 7835D587299E47CE00346711 /* XCRemoteSwiftPackageReference "RxSwift" */;
+			productName = RxSwift;
+		};
+		7835D58F299E521100346711 /* Bonjour */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 7835D58E299E521100346711 /* XCRemoteSwiftPackageReference "Bonjour" */;
+			productName = Bonjour;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 7555FF73242A565900829871 /* Project object */;
 }
