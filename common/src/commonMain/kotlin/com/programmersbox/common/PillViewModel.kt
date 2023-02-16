@@ -1,9 +1,6 @@
 package com.programmersbox.common
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import io.ktor.http.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.*
@@ -18,13 +15,17 @@ public class PillViewModel(private val scope: CoroutineScope) {
     internal var pillCount by mutableStateOf(PillCount(0.0, PillWeights()))
         private set
 
-    internal val pillWeightList = mutableStateListOf<PillWeights>()
+    internal val pillWeightList = mutableStateListOf<PillCount>()
 
     public var pillState: PillState by mutableStateOf(PillState.MainScreen)
 
     internal var newPill by mutableStateOf(PillWeights())
 
     internal var isNewPillLoading by mutableStateOf(false)
+
+    internal val pillAlreadySaved by derivedStateOf {
+        pillWeightList.any { it.pillWeights.uuid == pillCount.pillWeights.uuid }
+    }
 
     init {
         scope.launch {
@@ -33,6 +34,12 @@ public class PillViewModel(private val scope: CoroutineScope) {
                     pillWeightList.clear()
                     pillWeightList.addAll(it)
                 }
+                .launchIn(this)
+        }
+
+        scope.launch {
+            db.currentPill()
+                .onEach { pillCount = it }
                 .launchIn(this)
         }
 
@@ -54,10 +61,14 @@ public class PillViewModel(private val scope: CoroutineScope) {
         network = Network(Url("http://$url:8080"))
 
         network!!.socketConnection()
-            .onEach { println(it) }
             .onEach { result ->
                 result
-                    .onSuccess { pillCount = it }
+                    .onSuccess { pill ->
+                        db.updateCurrentPill(pill)
+                        if (pillWeightList.any { it.pillWeights.uuid == pill.pillWeights.uuid }) {
+                            db.updateInfo(pill)
+                        }
+                    }
                     .onFailure { pillState = PillState.Error }
             }
             .launchIn(scope)

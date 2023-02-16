@@ -6,9 +6,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
 import java.net.InetAddress
+import java.util.*
 import javax.jmdns.JmDNS
 import javax.jmdns.ServiceEvent
 import javax.jmdns.ServiceListener
@@ -27,21 +29,65 @@ public fun UIShow(
 
 internal actual class Database actual constructor(scope: CoroutineScope) {
     private val db = PillWeightDatabase()
-    actual suspend fun list(): Flow<List<PillWeights>> = db.getItems()
-        .mapNotNull { l -> l.map { PillWeights(it.name, it.pillWeight, it.bottleWeight) } }
+    actual suspend fun list(): Flow<List<PillCount>> = db.getItems()
+        .mapNotNull { l ->
+            l.map {
+                PillCount(
+                    count = it.currentCount,
+                    PillWeights(
+                        name = it.name,
+                        pillWeight = it.pillWeight,
+                        bottleWeight = it.bottleWeight,
+                        uuid = it.uuid
+                    )
+                )
+            }
+        }
 
     actual suspend fun savePillWeightInfo(pillWeights: PillWeights) {
-        db.saveInfo(pillWeights.name, pillWeights.pillWeight, pillWeights.bottleWeight)
+        db.saveInfo(
+            name = pillWeights.name,
+            pillWeight = pillWeights.pillWeight,
+            bottleWeight = pillWeights.bottleWeight,
+            uuid = pillWeights.uuid
+        )
     }
 
     actual suspend fun removePillWeightInfo(pillWeights: PillWeights) {
-        db.removeInfo(pillWeights.name, pillWeights.pillWeight, pillWeights.bottleWeight)
+        db.removeInfo(pillWeights.uuid)
     }
 
     actual suspend fun url(): Flow<String> = db.getUrl()
     actual suspend fun saveUrl(url: String) = db.saveUrl(url)
-}
+    actual suspend fun updateInfo(pillCount: PillCount) {
+        db.updateInfo(pillCount.pillWeights.uuid) {
+            currentCount = pillCount.count
+        }
+    }
 
+    actual suspend fun currentPill(): Flow<PillCount> = db.getLatest()
+        .map {
+            PillCount(
+                count = it.currentCount,
+                PillWeights(
+                    name = it.name,
+                    pillWeight = it.pillWeight,
+                    bottleWeight = it.bottleWeight,
+                    uuid = it.uuid
+                )
+            )
+        }
+
+    actual suspend fun updateCurrentPill(pillCount: PillCount) {
+        db.updateLatest(
+            currentCount = pillCount.count,
+            name = pillCount.pillWeights.name,
+            bottleWeight = pillCount.pillWeights.bottleWeight,
+            pillWeight = pillCount.pillWeights.pillWeight,
+            uuid = pillCount.pillWeights.uuid,
+        )
+    }
+}
 
 internal actual fun DiscoveryViewModel.discover() {
     isSearching = true
@@ -77,3 +123,5 @@ internal actual fun DiscoveryViewModel.discover() {
         isSearching = false
     }
 }
+
+internal actual fun randomUUID(): String = UUID.randomUUID().toString()

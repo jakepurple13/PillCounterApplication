@@ -114,9 +114,9 @@ internal fun App(
                                                     }
                                                 },
                                                 headlineText = { Text("Are you sre you want to remove this?") },
-                                                supportingText = { Text(it.name) },
+                                                supportingText = { Text(it.pillWeights.name) },
                                                 trailingContent = {
-                                                    IconButton(onClick = { vm.removeConfig(it) }) {
+                                                    IconButton(onClick = { vm.removeConfig(it.pillWeights) }) {
                                                         Icon(Icons.Default.Check, null)
                                                     }
                                                 }
@@ -125,23 +125,19 @@ internal fun App(
                                     } else {
                                         ElevatedCard(
                                             onClick = {
-                                                vm.onDrawerItemClick(
-                                                    PillWeights(
-                                                        it.name,
-                                                        it.bottleWeight,
-                                                        it.pillWeight
-                                                    )
-                                                )
+                                                vm.onDrawerItemClick(it.pillWeights)
                                             }
                                         ) {
                                             ListItem(
-                                                headlineText = { Text(it.name) },
+                                                headlineText = { Text(it.pillWeights.name) },
                                                 supportingText = {
                                                     Column {
-                                                        Text("Bottle Weight: ${it.bottleWeight}")
-                                                        Text("Pill Weight: ${it.pillWeight}")
+                                                        Text("Bottle Weight: ${it.pillWeights.bottleWeight}")
+                                                        Text("Pill Weight: ${it.pillWeights.pillWeight}")
                                                     }
                                                 },
+                                                overlineText = { Text("ID: ${it.pillWeights.uuid}") },
+                                                leadingContent = { Text(it.count.toString()) },
                                                 trailingContent = {
                                                     IconButton(onClick = { remove = true }) {
                                                         Icon(Icons.Default.Delete, null)
@@ -270,9 +266,15 @@ internal fun NewPill(viewModel: PillViewModel) {
             BottomAppBar {
                 OutlinedButton(
                     onClick = {
-                        viewModel.saveNewConfig(viewModel.newPill)
-                        viewModel.sendNewConfig(viewModel.newPill)
+                        val pill = if (viewModel.newPill.uuid.isEmpty()) {
+                            viewModel.newPill.copy(uuid = randomUUID())
+                        } else {
+                            viewModel.newPill
+                        }
+                        viewModel.saveNewConfig(pill)
+                        viewModel.sendNewConfig(pill)
                         viewModel.showMainScreen()
+                        viewModel.newPill = PillWeights()
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -354,12 +356,11 @@ internal fun MainScreen(viewModel: PillViewModel) {
             BottomAppBar {
                 OutlinedButton(
                     onClick = { viewModel.saveNewConfig(viewModel.pillCount.pillWeights) },
+                    enabled = !viewModel.pillAlreadySaved,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 4.dp)
-                ) {
-                    Text("Save Current Config")
-                }
+                ) { Text("Save Current Config") }
             }
         }
     ) { padding ->

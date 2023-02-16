@@ -15,13 +15,18 @@ public fun UIShow() {
 }
 
 internal actual class Database actual constructor(scope: CoroutineScope) {
-    actual suspend fun list(): Flow<List<PillWeights>> = flowOf(emptyList())
+    actual suspend fun list(): Flow<List<PillCount>> = flowOf(emptyList())
     actual suspend fun savePillWeightInfo(pillWeights: PillWeights) {}
     actual suspend fun removePillWeightInfo(pillWeights: PillWeights) {}
     actual suspend fun url(): Flow<String> = flowOf()
     actual suspend fun saveUrl(url: String) = Unit
+    actual suspend fun updateInfo(pillCount: PillCount) = Unit
+    actual suspend fun currentPill(): Flow<PillCount> = flowOf()
+    actual suspend fun updateCurrentPill(pillCount: PillCount) = Unit
 }
 
 internal actual fun DiscoveryViewModel.discover() {
 
 }
+
+internal actual fun randomUUID(): String = ""
