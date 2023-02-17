@@ -66,7 +66,7 @@ public class PillViewModel(private val scope: CoroutineScope) {
                     .onSuccess { pill ->
                         db.updateCurrentPill(pill)
                         if (pillWeightList.any { it.pillWeights.uuid == pill.pillWeights.uuid }) {
-                            db.updateInfo(pill)
+                            db.updateCurrentCountInfo(pill)
                         }
                     }
                     .onFailure { pillState = PillState.Error }
@@ -122,6 +122,10 @@ public class PillViewModel(private val scope: CoroutineScope) {
                 ?.onSuccess { println(it) }
                 ?.onFailure { it.printStackTrace() }
         }
+    }
+
+    internal fun updateConfig(pillCount: PillCount) {
+        scope.launch { db.updateInfo(pillCount) }
     }
 
     internal fun saveNewConfig(pillWeights: PillWeights) {

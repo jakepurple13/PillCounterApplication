@@ -92,6 +92,15 @@ internal actual class Database actual constructor(scope: CoroutineScope) {
     actual suspend fun updateInfo(pillCount: PillCount) {
         db.updateInfo(pillCount.pillWeights.uuid) {
             currentCount = pillCount.count
+            pillWeight = pillCount.pillWeights.pillWeight
+            bottleWeight = pillCount.pillWeights.bottleWeight
+            name = pillCount.pillWeights.name
+        }
+    }
+
+    actual suspend fun updateCurrentCountInfo(pillCount: PillCount) {
+        db.updateInfo(pillCount.pillWeights.uuid) {
+            currentCount = pillCount.count
         }
     }
 

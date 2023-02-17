@@ -11,12 +11,9 @@ import Bonjour
 class AppDelegate: UIResponder, UIApplicationDelegate {
     
     var window: UIWindow?
-    
-    let disposeBag = DisposeBag()
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         window = UIWindow(frame: UIScreen.main.bounds)
-        print("Hello World")
         let mainViewController = PlatformKt.MainViewController(
             actionOnDiscover: { action in
                 Task {

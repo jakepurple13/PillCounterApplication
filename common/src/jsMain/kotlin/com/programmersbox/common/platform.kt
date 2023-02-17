@@ -23,6 +23,7 @@ internal actual class Database actual constructor(scope: CoroutineScope) {
     actual suspend fun updateInfo(pillCount: PillCount) = Unit
     actual suspend fun currentPill(): Flow<PillCount> = flowOf()
     actual suspend fun updateCurrentPill(pillCount: PillCount) = Unit
+    actual suspend fun updateCurrentCountInfo(pillCount: PillCount) = Unit
 }
 
 internal actual fun DiscoveryViewModel.discover() {

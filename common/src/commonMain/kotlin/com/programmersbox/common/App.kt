@@ -354,13 +354,21 @@ internal fun MainScreen(viewModel: PillViewModel) {
     Scaffold(
         bottomBar = {
             BottomAppBar {
-                OutlinedButton(
-                    onClick = { viewModel.saveNewConfig(viewModel.pillCount.pillWeights) },
-                    enabled = !viewModel.pillAlreadySaved,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 4.dp)
-                ) { Text("Save Current Config") }
+                if (viewModel.pillAlreadySaved) {
+                    OutlinedButton(
+                        onClick = { viewModel.updateConfig(viewModel.pillCount) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 4.dp)
+                    ) { Text("Update Current Config") }
+                } else {
+                    OutlinedButton(
+                        onClick = { viewModel.saveNewConfig(viewModel.pillCount.pillWeights) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 4.dp)
+                    ) { Text("Save Current Config") }
+                }
             }
         }
     ) { padding ->

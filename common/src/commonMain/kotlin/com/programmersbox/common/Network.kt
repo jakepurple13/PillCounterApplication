@@ -60,7 +60,12 @@ internal class Network(
     }
 
     fun socketConnection(): Flow<Result<PillCount>> = flow {
-        websocketClient.ws(method = HttpMethod.Get, host = url.host, port = url.port, path = "/ws") {
+        websocketClient.ws(
+            method = HttpMethod.Get,
+            host = url.host,
+            port = url.port,
+            path = "/ws"
+        ) {
             incoming
                 .consumeAsFlow()
                 .filterIsInstance<Frame.Text>()
