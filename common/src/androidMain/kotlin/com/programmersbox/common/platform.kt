@@ -15,7 +15,6 @@ import javax.jmdns.JmDNS
 import javax.jmdns.ServiceEvent
 import javax.jmdns.ServiceListener
 
-
 public actual fun getPlatformName(): String {
     return "Android"
 }

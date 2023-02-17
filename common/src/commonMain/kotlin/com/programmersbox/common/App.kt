@@ -32,7 +32,8 @@ internal fun App(
         val drawerState = rememberDrawerState(DrawerValue.Closed)
         ModalNavigationDrawer(
             drawerState = drawerState,
-            gesturesEnabled = vm.pillState != PillState.Error && vm.pillState != PillState.Discovery,
+            gesturesEnabled = (vm.pillState != PillState.Error && vm.pillState != PillState.Discovery) ||
+                    drawerState.isOpen,
             drawerContent = {
                 ModalDrawerSheet {
                     Scaffold(
@@ -63,7 +64,7 @@ internal fun App(
                                                 when (vm.pillState) {
                                                     PillState.MainScreen -> Icons.Default.Add
                                                     PillState.NewPill -> Icons.Default.Medication
-                                                    else -> Icons.Default.NetworkCheck
+                                                    else -> Icons.Default.NotAccessible
                                                 },
                                                 null
                                             )
@@ -124,9 +125,7 @@ internal fun App(
                                         }
                                     } else {
                                         ElevatedCard(
-                                            onClick = {
-                                                vm.onDrawerItemClick(it.pillWeights)
-                                            }
+                                            onClick = { vm.onDrawerItemClick(it.pillWeights) }
                                         ) {
                                             ListItem(
                                                 headlineText = { Text(it.pillWeights.name) },
@@ -137,7 +136,7 @@ internal fun App(
                                                     }
                                                 },
                                                 overlineText = { Text("ID: ${it.pillWeights.uuid}") },
-                                                leadingContent = { Text(it.count.toString()) },
+                                                leadingContent = { Text(it.formattedCount().toString()) },
                                                 trailingContent = {
                                                     IconButton(onClick = { remove = true }) {
                                                         Icon(Icons.Default.Delete, null)
@@ -163,9 +162,11 @@ internal fun App(
                             ) { Icon(Icons.Default.MenuOpen, null) }
                         },
                         actions = {
-                            IconButton(
-                                onClick = { vm.showDiscovery() }
-                            ) { Icon(Icons.Default.Refresh, null) }
+                            AnimatedVisibility(vm.pillState != PillState.Discovery) {
+                                IconButton(
+                                    onClick = { vm.showDiscovery() }
+                                ) { Icon(Icons.Default.Refresh, null) }
+                            }
                         }
                     )
                 },
@@ -236,7 +237,7 @@ internal fun BoxScope.ErrorScreen(viewModel: PillViewModel) {
                 Text("Last Accessed")
                 Text(viewModel.pillCount.pillWeights.name)
                 Text(
-                    "${viewModel.pillCount.count} pills",
+                    "${viewModel.pillCount.formattedCount()} pills",
                     style = MaterialTheme.typography.titleLarge
                 )
                 Row(
@@ -381,7 +382,7 @@ internal fun MainScreen(viewModel: PillViewModel) {
         ) {
             Text(viewModel.pillCount.pillWeights.name)
             Text(
-                "${viewModel.pillCount.count} pills",
+                "${viewModel.pillCount.formattedCount()} pills",
                 style = MaterialTheme.typography.titleLarge
             )
             Row(

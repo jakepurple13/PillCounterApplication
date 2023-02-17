@@ -3,6 +3,7 @@ package com.programmersbox.common
 import androidx.compose.animation.*
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -29,7 +30,23 @@ internal fun DiscoveryScreen(viewModel: PillViewModel) {
 
     Scaffold(
         bottomBar = {
-            Column {
+            Column(
+                modifier = Modifier.background(MaterialTheme.colorScheme.background)
+            ) {
+                OutlinedTextField(
+                    value = ip,
+                    onValueChange = { ip = it },
+                    label = { Text("Enter ip address") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 4.dp)
+                        .padding(bottom = 4.dp),
+                    trailingIcon = {
+                        IconButton(
+                            onClick = { vm.connect(ip) }
+                        ) { Icon(Icons.Default.Add, null) }
+                    }
+                )
                 LinearProgressIndicator(
                     progress = animateFloatAsState(
                         targetValue = if (vm.isSearching) 0f else 1f,
@@ -87,22 +104,6 @@ internal fun DiscoveryScreen(viewModel: PillViewModel) {
                         Text("Searching")
                     }
                 }
-            }
-
-            item {
-                OutlinedTextField(
-                    value = ip,
-                    onValueChange = { ip = it },
-                    label = { Text("Enter ip address") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 4.dp),
-                    trailingIcon = {
-                        IconButton(
-                            onClick = { vm.connect(ip) }
-                        ) { Icon(Icons.Default.Add, null) }
-                    }
-                )
             }
         }
     }
