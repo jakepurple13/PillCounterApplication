@@ -79,7 +79,7 @@ internal fun DiscoveryScreen(viewModel: PillViewModel) {
             contentPadding = padding,
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            items(vm.discoveredList) {
+            items(vm.filteredDiscoveredList) {
                 OutlinedCard(
                     onClick = { vm.connect(it.ip) }
                 ) {
@@ -97,7 +97,9 @@ internal fun DiscoveryScreen(viewModel: PillViewModel) {
                     exit = shrinkVertically() + fadeOut(),
                 ) {
                     Column(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 4.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         CircularProgressIndicator()
@@ -115,6 +117,7 @@ internal class DiscoveryViewModel(
 ) {
     var isSearching by mutableStateOf(false)
     val discoveredList = mutableStateListOf<PillCounterIp>()
+    val filteredDiscoveredList by derivedStateOf { discoveredList.distinct() }
 
     fun startDiscovery() {
         if (!isSearching) {
