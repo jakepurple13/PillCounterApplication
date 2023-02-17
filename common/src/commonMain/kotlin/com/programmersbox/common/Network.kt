@@ -86,8 +86,7 @@ internal class Network(
     fun pillWeightCalibration(): Flow<PillWeights> = flow {
         withTimeout(5000) {
             while (true) {
-                runCatching { getApi<PillWeights>("$url/pillWeight") }.getOrNull()
-                    ?.let { emit(it) }
+                runCatching { getApi<PillWeights>("$url/pillWeight") }.getOrNull()?.let { emit(it) }
                 delay(10)
             }
         }
