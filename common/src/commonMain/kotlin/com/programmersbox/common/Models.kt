@@ -4,15 +4,15 @@ import kotlinx.serialization.Serializable
 import kotlin.math.round
 
 @Serializable
-internal data class PillCount(
+public data class PillCount(
     val count: Double,
     val pillWeights: PillWeights
 ) {
-    fun formattedCount() = count.round(2)
+    public fun formattedCount(): Double = count.round(2)
 }
 
 @Serializable
-internal data class PillWeights(
+public data class PillWeights(
     val name: String = "",
     val bottleWeight: Double = 0.0,
     val pillWeight: Double = 0.0,

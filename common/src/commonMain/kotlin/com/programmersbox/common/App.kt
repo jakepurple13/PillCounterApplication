@@ -16,16 +16,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
 internal fun App(
+    scope: CoroutineScope = rememberCoroutineScope(),
+    vm: PillViewModel = remember { PillViewModel(scope) },
     backHandler: @Composable (PillViewModel) -> Unit = {}
 ) {
-    val scope = rememberCoroutineScope()
-    val vm = remember { PillViewModel(scope) }
-
     backHandler(vm)
 
     Surface {

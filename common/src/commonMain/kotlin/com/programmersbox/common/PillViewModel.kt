@@ -12,7 +12,7 @@ public class PillViewModel(private val scope: CoroutineScope) {
 
     private var network: Network? = null
 
-    internal var pillCount by mutableStateOf(PillCount(0.0, PillWeights()))
+    public var pillCount: PillCount by mutableStateOf(PillCount(0.0, PillWeights()))
         private set
 
     internal val pillWeightList = mutableStateListOf<PillCount>()
