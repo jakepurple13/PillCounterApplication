@@ -114,8 +114,8 @@ private fun PreferencesWindow(desktopViewModel: DesktopViewModel) {
                     }
                 }
             )
+            Divider()
         }
-        Divider()
     }
 }
 

@@ -18,6 +18,7 @@ public class PillViewModel(private val scope: CoroutineScope) {
     internal val pillWeightList = mutableStateListOf<PillCount>()
 
     public var pillState: PillState by mutableStateOf(PillState.MainScreen)
+    private var previousPillState: PillState = PillState.MainScreen
 
     internal var newPill by mutableStateOf(PillWeights())
 
@@ -55,25 +56,30 @@ public class PillViewModel(private val scope: CoroutineScope) {
         scope.launch { db.saveUrl(url) }
     }
 
+    internal fun reconnect() {
+        scope.launch { db.url().firstOrNull()?.let { connectToNetwork(it) } }
+    }
+
     private fun connectToNetwork(url: String) {
         network?.close()
 
         network = Network(Url("http://$url:8080"))
 
         network!!.socketConnection()
+            .catch {
+                it.printStackTrace()
+                emit(Result.failure(it))
+            }
             .onEach { result ->
                 result
                     .onSuccess { pill ->
+                        pillState = PillState.MainScreen
                         db.updateCurrentPill(pill)
                         if (pillWeightList.any { it.pillWeights.uuid == pill.pillWeights.uuid }) {
                             db.updateCurrentCountInfo(pill)
                         }
                     }
                     .onFailure { pillState = PillState.Error }
-            }
-            .catch {
-                it.printStackTrace()
-                emit(Result.failure(it))
             }
             .launchIn(scope)
     }
@@ -137,21 +143,29 @@ public class PillViewModel(private val scope: CoroutineScope) {
     }
 
     internal fun showNewPill() {
-        pillState = PillState.NewPill
+        if (previousPillState == PillState.Error) {
+            pillState = PillState.Error
+        } else {
+            previousPillState = pillState
+            pillState = PillState.NewPill
+        }
     }
 
     public fun showMainScreen() {
-        pillState = PillState.MainScreen
+        if (previousPillState == PillState.Error) {
+            pillState = PillState.Error
+        } else {
+            previousPillState = pillState
+            pillState = PillState.MainScreen
+        }
     }
 
     internal fun showDiscovery() {
+        previousPillState = pillState
         pillState = PillState.Discovery
     }
 }
 
-public sealed class PillState {
-    public object MainScreen : PillState()
-    public object NewPill : PillState()
-    public object Discovery : PillState()
-    public object Error : PillState()
+public enum class PillState {
+    MainScreen, NewPill, Discovery, Error
 }

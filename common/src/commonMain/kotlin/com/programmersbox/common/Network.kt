@@ -66,20 +66,25 @@ internal class Network(
             port = url.port,
             path = "/ws"
         ) {
-            incoming
-                .consumeAsFlow()
-                .filterIsInstance<Frame.Text>()
-                .map { it.readText() }
-                .mapNotNull { text ->
-                    try {
-                        json.decodeFromString<PillCount>(text)
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                        null
+            try {
+                incoming
+                    .consumeAsFlow()
+                    .catch { this@flow.emit(Result.failure(it)) }
+                    .filterIsInstance<Frame.Text>()
+                    .map { it.readText() }
+                    .mapNotNull { text ->
+                        try {
+                            json.decodeFromString<PillCount>(text)
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            null
+                        }
                     }
-                }
-                .onEach { emit(Result.success(it)) }
-                .collect()
+                    .onEach { emit(Result.success(it)) }
+                    .collect()
+            } catch (e: Exception) {
+                emit(Result.failure(e))
+            }
         }
     }
 

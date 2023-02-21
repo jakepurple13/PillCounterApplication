@@ -173,13 +173,13 @@ internal fun App(
                 bottomBar = {
                     BottomAppBar {
                         NavigationBarItem(
-                            selected = vm.pillState is PillState.MainScreen,
+                            selected = vm.pillState == PillState.MainScreen,
                             icon = { Icon(Icons.Default.Medication, null) },
                             label = { Text("Home") },
                             onClick = { vm.showMainScreen() }
                         )
                         NavigationBarItem(
-                            selected = vm.pillState is PillState.NewPill,
+                            selected = vm.pillState == PillState.NewPill,
                             icon = { Icon(Icons.Default.Add, null) },
                             label = { Text("Add New Pill") },
                             onClick = { vm.showNewPill() }
@@ -227,6 +227,9 @@ internal fun BoxScope.ErrorScreen(viewModel: PillViewModel) {
             Text("Something went wrong with the connection")
             Button(onClick = { viewModel.showDiscovery() }) {
                 Text("Find Pill Counter")
+            }
+            Button(onClick = { viewModel.reconnect() }) {
+                Text("Retry Connection")
             }
         }
         OutlinedCard {
