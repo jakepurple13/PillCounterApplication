@@ -211,6 +211,7 @@ internal fun BoxScope.ErrorScreen(viewModel: PillViewModel) {
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .animateContentSize()
             .align(Alignment.Center),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceEvenly
@@ -231,6 +232,7 @@ internal fun BoxScope.ErrorScreen(viewModel: PillViewModel) {
             Button(onClick = { viewModel.reconnect() }) {
                 Text("Retry Connection")
             }
+            if (viewModel.isConnectionLoading) CircularProgressIndicator()
         }
         OutlinedCard {
             Column(

@@ -11,6 +11,7 @@ public class PillViewModel(private val scope: CoroutineScope) {
     private val db = Database(scope)
 
     private var network: Network? = null
+    internal var isConnectionLoading by mutableStateOf(false)
 
     public var pillCount: PillCount by mutableStateOf(PillCount(0.0, PillWeights()))
         private set
@@ -57,10 +58,14 @@ public class PillViewModel(private val scope: CoroutineScope) {
     }
 
     internal fun reconnect() {
-        scope.launch { db.url().firstOrNull()?.let { connectToNetwork(it) } }
+        scope.launch {
+            if (!isConnectionLoading) db.url().firstOrNull()?.let { connectToNetwork(it) }
+        }
     }
 
     private fun connectToNetwork(url: String) {
+        isConnectionLoading = true
+
         network?.close()
 
         network = Network(Url("http://$url:8080"))
@@ -71,9 +76,11 @@ public class PillViewModel(private val scope: CoroutineScope) {
                 emit(Result.failure(it))
             }
             .onEach { result ->
+                isConnectionLoading = false
                 result
                     .onSuccess { pill ->
-                        pillState = PillState.MainScreen
+                        if (pillState == PillState.Error)
+                            pillState = PillState.MainScreen
                         db.updateCurrentPill(pill)
                         if (pillWeightList.any { it.pillWeights.uuid == pill.pillWeights.uuid }) {
                             db.updateCurrentCountInfo(pill)
