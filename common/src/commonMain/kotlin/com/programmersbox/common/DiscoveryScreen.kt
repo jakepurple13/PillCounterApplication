@@ -29,10 +29,16 @@ internal fun DiscoveryScreen(viewModel: PillViewModel) {
     LaunchedEffect(Unit) { vm.startDiscovery() }
 
     Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Discovery") }
+            )
+        },
         bottomBar = {
             Column(
                 modifier = Modifier.background(MaterialTheme.colorScheme.background)
             ) {
+                BerryLanButton()
                 OutlinedTextField(
                     value = ip,
                     onValueChange = { ip = it },

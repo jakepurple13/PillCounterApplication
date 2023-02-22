@@ -1,5 +1,6 @@
 package com.programmersbox.common
 
+import androidx.compose.runtime.Composable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 
@@ -20,3 +21,6 @@ internal expect class Database(scope: CoroutineScope) {
 internal expect fun DiscoveryViewModel.discover()
 
 internal expect fun randomUUID(): String
+
+@Composable
+internal expect fun BerryLanButton()

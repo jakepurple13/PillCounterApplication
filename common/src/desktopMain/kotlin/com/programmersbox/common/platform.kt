@@ -136,3 +136,8 @@ internal actual fun DiscoveryViewModel.discover() {
 }
 
 internal actual fun randomUUID(): String = UUID.randomUUID().toString()
+
+@Composable
+internal actual fun BerryLanButton() {
+
+}

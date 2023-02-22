@@ -16,4 +16,7 @@
             </intent-filter>
         </activity>
     </application>
+    <queries>
+        <package android:name="io.guh.berrylan"/>
+    </queries>
 </manifest>

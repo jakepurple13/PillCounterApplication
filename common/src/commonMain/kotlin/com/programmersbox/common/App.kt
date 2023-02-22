@@ -29,121 +29,135 @@ internal fun App(
     backHandler(vm)
 
     Surface {
-        val drawerState = rememberDrawerState(DrawerValue.Closed)
-        ModalNavigationDrawer(
-            drawerState = drawerState,
-            gesturesEnabled = (vm.pillState != PillState.Error && vm.pillState != PillState.Discovery) ||
-                    drawerState.isOpen,
-            drawerContent = {
-                ModalDrawerSheet {
-                    Scaffold(
-                        topBar = {
-                            TopAppBar(
-                                title = { Text("Saved") },
-                                actions = {
-                                    IconButton(
-                                        onClick = { scope.launch { drawerState.close() } }
-                                    ) { Icon(Icons.Default.Close, null) }
-                                }
-                            )
-                        },
-                        bottomBar = {
-                            BottomAppBar(
-                                actions = {},
-                                floatingActionButton = {
-                                    ExtendedFloatingActionButton(
-                                        onClick = {
+        Crossfade(vm.pillState) { target ->
+            when (target) {
+                PillState.Discovery -> DiscoveryScreen(vm)
+                else -> HomeScreen(scope, vm)
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
+@Composable
+internal fun HomeScreen(
+    scope: CoroutineScope,
+    vm: PillViewModel
+) {
+    val drawerState = rememberDrawerState(DrawerValue.Closed)
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        gesturesEnabled = (vm.pillState != PillState.Error && vm.pillState != PillState.Discovery) ||
+                drawerState.isOpen,
+        drawerContent = {
+            ModalDrawerSheet {
+                Scaffold(
+                    topBar = {
+                        TopAppBar(
+                            title = { Text("Saved") },
+                            actions = {
+                                IconButton(
+                                    onClick = { scope.launch { drawerState.close() } }
+                                ) { Icon(Icons.Default.Close, null) }
+                            }
+                        )
+                    },
+                    bottomBar = {
+                        BottomAppBar(
+                            actions = {},
+                            floatingActionButton = {
+                                ExtendedFloatingActionButton(
+                                    onClick = {
+                                        when (vm.pillState) {
+                                            PillState.MainScreen -> vm.showNewPill()
+                                            PillState.NewPill -> vm.showMainScreen()
+                                            else -> {}
+                                        }
+                                    },
+                                    icon = {
+                                        Icon(
                                             when (vm.pillState) {
-                                                PillState.MainScreen -> vm.showNewPill()
-                                                PillState.NewPill -> vm.showMainScreen()
-                                                else -> {}
+                                                PillState.MainScreen -> Icons.Default.Add
+                                                PillState.NewPill -> Icons.Default.Medication
+                                                else -> Icons.Default.NotAccessible
+                                            },
+                                            null
+                                        )
+                                    },
+                                    text = {
+                                        Text(
+                                            when (vm.pillState) {
+                                                PillState.MainScreen -> "Add New Pill"
+                                                PillState.NewPill -> "Return to Home Screen"
+                                                else -> ""
                                             }
-                                        },
-                                        icon = {
-                                            Icon(
-                                                when (vm.pillState) {
-                                                    PillState.MainScreen -> Icons.Default.Add
-                                                    PillState.NewPill -> Icons.Default.Medication
-                                                    else -> Icons.Default.NotAccessible
-                                                },
-                                                null
-                                            )
-                                        },
-                                        text = {
-                                            Text(
-                                                when (vm.pillState) {
-                                                    PillState.MainScreen -> "Add New Pill"
-                                                    PillState.NewPill -> "Return to Home Screen"
-                                                    else -> ""
-                                                }
-                                            )
-                                        }
-                                    )
-                                }
-                            )
-                        }
-                    ) { padding ->
-                        LazyColumn(
-                            verticalArrangement = Arrangement.spacedBy(2.dp),
-                            contentPadding = padding
-                        ) {
-                            items(vm.pillWeightList) {
-                                var remove by remember { mutableStateOf(false) }
-                                AnimatedContent(
-                                    remove,
-                                    transitionSpec = {
-                                        if (targetState > initialState) {
-                                            slideInHorizontally { width -> -width } + fadeIn() with
-                                                    slideOutHorizontally { width -> width } + fadeOut()
-                                        } else {
-                                            slideInHorizontally { width -> width } + fadeIn() with
-                                                    slideOutHorizontally { width -> -width } + fadeOut()
-                                        }.using(SizeTransform(clip = false))
+                                        )
                                     }
-                                ) { target ->
-                                    if (target) {
-                                        OutlinedCard(
-                                            border = BorderStroke(
-                                                CardDefaults.outlinedCardBorder().width,
-                                                Color.Red
-                                            )
-                                        ) {
-                                            ListItem(
-                                                leadingContent = {
-                                                    IconButton(onClick = { remove = false }) {
-                                                        Icon(Icons.Default.Close, null)
-                                                    }
-                                                },
-                                                headlineText = { Text("Are you sre you want to remove this?") },
-                                                supportingText = { Text(it.pillWeights.name) },
-                                                trailingContent = {
-                                                    IconButton(onClick = { vm.removeConfig(it.pillWeights) }) {
-                                                        Icon(Icons.Default.Check, null)
-                                                    }
-                                                }
-                                            )
-                                        }
+                                )
+                            }
+                        )
+                    }
+                ) { padding ->
+                    LazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(2.dp),
+                        contentPadding = padding
+                    ) {
+                        items(vm.pillWeightList) {
+                            var remove by remember { mutableStateOf(false) }
+                            AnimatedContent(
+                                remove,
+                                transitionSpec = {
+                                    if (targetState > initialState) {
+                                        slideInHorizontally { width -> -width } + fadeIn() with
+                                                slideOutHorizontally { width -> width } + fadeOut()
                                     } else {
-                                        ElevatedCard(
-                                            onClick = { vm.onDrawerItemClick(it.pillWeights) }
-                                        ) {
-                                            ListItem(
-                                                headlineText = { Text(it.pillWeights.name) },
-                                                supportingText = {
-                                                    Column {
-                                                        Text("Bottle Weight: ${it.pillWeights.bottleWeight}")
-                                                        Text("Pill Weight: ${it.pillWeights.pillWeight}")
-                                                    }
-                                                },
-                                                overlineText = { Text("ID: ${it.pillWeights.uuid}") },
-                                                leadingContent = { Text(it.formattedCount().toString()) },
-                                                trailingContent = {
-                                                    IconButton(onClick = { remove = true }) {
-                                                        Icon(Icons.Default.Delete, null)
-                                                    }
+                                        slideInHorizontally { width -> width } + fadeIn() with
+                                                slideOutHorizontally { width -> -width } + fadeOut()
+                                    }.using(SizeTransform(clip = false))
+                                }
+                            ) { target ->
+                                if (target) {
+                                    OutlinedCard(
+                                        border = BorderStroke(
+                                            CardDefaults.outlinedCardBorder().width,
+                                            Color.Red
+                                        )
+                                    ) {
+                                        ListItem(
+                                            leadingContent = {
+                                                IconButton(onClick = { remove = false }) {
+                                                    Icon(Icons.Default.Close, null)
                                                 }
-                                            )
-                                        }
+                                            },
+                                            headlineText = { Text("Are you sre you want to remove this?") },
+                                            supportingText = { Text(it.pillWeights.name) },
+                                            trailingContent = {
+                                                IconButton(onClick = { vm.removeConfig(it.pillWeights) }) {
+                                                    Icon(Icons.Default.Check, null)
+                                                }
+                                            }
+                                        )
+                                    }
+                                } else {
+                                    ElevatedCard(
+                                        onClick = { vm.onDrawerItemClick(it.pillWeights) }
+                                    ) {
+                                        ListItem(
+                                            headlineText = { Text(it.pillWeights.name) },
+                                            supportingText = {
+                                                Column {
+                                                    Text("Bottle Weight: ${it.pillWeights.bottleWeight}")
+                                                    Text("Pill Weight: ${it.pillWeights.pillWeight}")
+                                                }
+                                            },
+                                            overlineText = { Text("ID: ${it.pillWeights.uuid}") },
+                                            leadingContent = { Text(it.formattedCount().toString()) },
+                                            trailingContent = {
+                                                IconButton(onClick = { remove = true }) {
+                                                    Icon(Icons.Default.Delete, null)
+                                                }
+                                            }
+                                        )
                                     }
                                 }
                             }
@@ -151,54 +165,54 @@ internal fun App(
                     }
                 }
             }
-        ) {
-            Scaffold(
-                topBar = {
-                    TopAppBar(
-                        title = { Text("Pill Counter") },
-                        navigationIcon = {
+        }
+    ) {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text("Pill Counter") },
+                    navigationIcon = {
+                        IconButton(
+                            onClick = { scope.launch { drawerState.open() } }
+                        ) { Icon(Icons.Default.MenuOpen, null) }
+                    },
+                    actions = {
+                        AnimatedVisibility(vm.pillState != PillState.Discovery) {
                             IconButton(
-                                onClick = { scope.launch { drawerState.open() } }
-                            ) { Icon(Icons.Default.MenuOpen, null) }
-                        },
-                        actions = {
-                            AnimatedVisibility(vm.pillState != PillState.Discovery) {
-                                IconButton(
-                                    onClick = { vm.showDiscovery() }
-                                ) { Icon(Icons.Default.Refresh, null) }
-                            }
+                                onClick = { vm.showDiscovery() }
+                            ) { Icon(Icons.Default.Refresh, null) }
                         }
-                    )
-                },
-                bottomBar = {
-                    BottomAppBar {
-                        NavigationBarItem(
-                            selected = vm.pillState == PillState.MainScreen,
-                            icon = { Icon(Icons.Default.Medication, null) },
-                            label = { Text("Home") },
-                            onClick = { vm.showMainScreen() }
-                        )
-                        NavigationBarItem(
-                            selected = vm.pillState == PillState.NewPill,
-                            icon = { Icon(Icons.Default.Add, null) },
-                            label = { Text("Add New Pill") },
-                            onClick = { vm.showNewPill() }
-                        )
                     }
+                )
+            },
+            bottomBar = {
+                BottomAppBar {
+                    NavigationBarItem(
+                        selected = vm.pillState == PillState.MainScreen,
+                        icon = { Icon(Icons.Default.Medication, null) },
+                        label = { Text("Home") },
+                        onClick = { vm.showMainScreen() }
+                    )
+                    NavigationBarItem(
+                        selected = vm.pillState == PillState.NewPill,
+                        icon = { Icon(Icons.Default.Add, null) },
+                        label = { Text("Add New Pill") },
+                        onClick = { vm.showNewPill() }
+                    )
                 }
-            ) { padding ->
-                Crossfade(vm.pillState) { target ->
-                    Box(
-                        Modifier
-                            .fillMaxSize()
-                            .padding(padding)
-                    ) {
-                        when (target) {
-                            PillState.MainScreen -> MainScreen(vm)
-                            PillState.NewPill -> NewPill(vm)
-                            PillState.Discovery -> DiscoveryScreen(vm)
-                            PillState.Error -> ErrorScreen(vm)
-                        }
+            }
+        ) { padding ->
+            Crossfade(vm.pillState) { target ->
+                Box(
+                    Modifier
+                        .fillMaxSize()
+                        .padding(padding)
+                ) {
+                    when (target) {
+                        PillState.MainScreen -> MainScreen(vm)
+                        PillState.NewPill -> NewPill(vm)
+                        PillState.Error -> ErrorScreen(vm)
+                        else -> {}
                     }
                 }
             }

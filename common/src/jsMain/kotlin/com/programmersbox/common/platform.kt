@@ -31,3 +31,8 @@ internal actual fun DiscoveryViewModel.discover() {
 }
 
 internal actual fun randomUUID(): String = ""
+
+@Composable
+internal actual fun BerryLanButton() {
+
+}
