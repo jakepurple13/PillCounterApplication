@@ -44,7 +44,12 @@ internal fun DiscoveryScreen(viewModel: PillViewModel) {
             Column(
                 modifier = Modifier.background(MaterialTheme.colorScheme.background)
             ) {
-                BerryLanButton()
+                if (hasBLEDiscovery) {
+                    OutlinedButton(
+                        onClick = viewModel::showBLEDiscovery,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) { Text("Need to Connect PillCounter to WiFi?") }
+                }
                 OutlinedTextField(
                     value = ip,
                     onValueChange = { ip = it },

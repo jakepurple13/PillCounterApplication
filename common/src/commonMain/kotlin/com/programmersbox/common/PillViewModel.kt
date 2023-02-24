@@ -171,8 +171,13 @@ public class PillViewModel(private val scope: CoroutineScope) {
         previousPillState = pillState
         pillState = PillState.Discovery
     }
+
+    internal fun showBLEDiscovery() {
+        previousPillState = pillState
+        pillState = PillState.BluetoothDiscovery
+    }
 }
 
 public enum class PillState {
-    MainScreen, NewPill, Discovery, Error
+    MainScreen, NewPill, Discovery, Error, BluetoothDiscovery
 }

@@ -32,6 +32,7 @@ internal fun App(
         Crossfade(vm.pillState) { target ->
             when (target) {
                 PillState.Discovery -> DiscoveryScreen(vm)
+                PillState.BluetoothDiscovery -> BluetoothDiscovery(vm)
                 else -> HomeScreen(scope, vm)
             }
         }

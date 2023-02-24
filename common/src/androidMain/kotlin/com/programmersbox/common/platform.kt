@@ -1,13 +1,8 @@
 package com.programmersbox.common
 
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalUriHandler
 import com.programmersbox.database.PillWeightDatabase
+import com.splendo.kaluga.bluetooth.UUID
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -16,7 +11,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
 import java.net.InetAddress
-import java.util.*
 import javax.jmdns.JmDNS
 import javax.jmdns.ServiceEvent
 import javax.jmdns.ServiceListener
@@ -141,20 +135,9 @@ internal actual fun DiscoveryViewModel.discover() {
 
 internal actual fun randomUUID(): String = UUID.randomUUID().toString()
 
-@Composable
-internal actual fun BerryLanButton() {
-    val uriHandler = LocalUriHandler.current
-    val context = LocalContext.current
-    OutlinedButton(
-        onClick = {
-            val intent = context.packageManager.getLaunchIntentForPackage("io.guh.berrylan")
-            try {
-                context.startActivity(intent)
-            } catch (e: Exception) {
-                uriHandler.openUri("https://play.google.com/store/apps/details?id=io.guh.berrylan")
-            }
-        },
-        modifier = Modifier.fillMaxWidth(),
-    ) { Text("BerryLan to Connect PillCounter to WiFi") }
-}
+internal actual val hasBLEDiscovery: Boolean = true
 
+@Composable
+internal actual fun BluetoothDiscovery(viewModel: PillViewModel) {
+    BluetoothDiscoveryScreen(viewModel)
+}

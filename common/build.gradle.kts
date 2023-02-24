@@ -51,6 +51,9 @@ kotlin {
                 api("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
                 api("io.ktor:ktor-client-logging:$ktorVersion")
                 api("io.ktor:ktor-client-websockets:$ktorVersion")
+                api("com.splendo.kaluga:bluetooth:0.5.0")
+                api("com.splendo.kaluga:permissions:0.5.0")
+                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4!!")
             }
         }
 
@@ -68,6 +71,11 @@ kotlin {
                 api("io.ktor:ktor-client-cio:$ktorVersion")
                 api(projects.database)
                 api("org.jmdns:jmdns:3.5.8")
+                api("com.github.LeandroSQ:android-ble-made-easy:1.8.0")
+                api("androidx.lifecycle:lifecycle-viewmodel-compose:2.5.1")
+                api("com.github.zqisheng.QsBle:ble:1.2.3")
+                api("com.github.zqisheng.QsBle:ble_coroutines:1.2.3")
+                api("com.juul.kable:core:0.21.0")
             }
         }
 
@@ -102,6 +110,7 @@ kotlin {
             dependencies {
                 api("io.ktor:ktor-client-darwin:$ktorVersion")
                 api(projects.database)
+                api("com.juul.kable:core:0.21.0")
             }
             iosX64Main.dependsOn(this)
             iosArm64Main.dependsOn(this)
@@ -122,6 +131,9 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
+    }
+    packagingOptions {
+        resources.excludes.add("META-INF/*")
     }
 }
 

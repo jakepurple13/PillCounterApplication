@@ -22,5 +22,7 @@ internal expect fun DiscoveryViewModel.discover()
 
 internal expect fun randomUUID(): String
 
+internal expect val hasBLEDiscovery: Boolean
+
 @Composable
-internal expect fun BerryLanButton()
+internal expect fun BluetoothDiscovery(viewModel: PillViewModel)

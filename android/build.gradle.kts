@@ -2,6 +2,7 @@ plugins {
     id("org.jetbrains.compose")
     id("com.android.application")
     kotlin("android")
+    id("kotlinx-serialization")
 }
 
 group = "com.programmersbox"
@@ -33,6 +34,9 @@ android {
         getByName("release") {
             isMinifyEnabled = false
         }
+    }
+    packagingOptions {
+        resources.excludes.add("META-INF/*")
     }
 }
 

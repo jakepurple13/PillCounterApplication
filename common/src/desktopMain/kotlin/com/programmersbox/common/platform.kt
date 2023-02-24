@@ -137,7 +137,9 @@ internal actual fun DiscoveryViewModel.discover() {
 
 internal actual fun randomUUID(): String = UUID.randomUUID().toString()
 
+internal actual val hasBLEDiscovery: Boolean = false
+
 @Composable
-internal actual fun BerryLanButton() {
+internal actual fun BluetoothDiscovery(viewModel: PillViewModel) {
 
 }

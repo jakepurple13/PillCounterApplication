@@ -1,11 +1,16 @@
 package com.programmersbox.common
 
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Application
 import com.programmersbox.database.PillWeightDatabase
@@ -140,11 +145,9 @@ public class IpInfo(public val name: String, public val host: String)
 
 internal actual fun randomUUID(): String = NSUUID.UUID().UUIDString()
 
+internal actual val hasBLEDiscovery: Boolean = true
+
 @Composable
-internal actual fun BerryLanButton() {
-    val uriHandler = LocalUriHandler.current
-    OutlinedButton(
-        onClick = { uriHandler.openUri("https://itunes.apple.com/us/app/berrylan/id1436156018") },
-        modifier = Modifier.fillMaxWidth(),
-    ) { Text("BerryLan to Connect PillCounter to WiFi") }
+internal actual fun BluetoothDiscovery(viewModel: PillViewModel) {
+    BluetoothDiscoveryScreen(viewModel)
 }
