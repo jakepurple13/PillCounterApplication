@@ -19,18 +19,18 @@ import moe.tlaster.precompose.navigation.Navigator
 internal fun BannerBox(
     modifier: Modifier = Modifier,
     showBanner: Boolean = false,
-    bannerEnter: EnterTransition = slideInVertically(
+    bannerEnter: EnterTransition = expandVertically(
         animationSpec = tween(
             durationMillis = 150,
             easing = LinearOutSlowInEasing
         )
-    ) { -it },
-    bannerExit: ExitTransition = slideOutVertically(
+    ) { -it / 2 },
+    bannerExit: ExitTransition = shrinkVertically(
         animationSpec = tween(
             durationMillis = 150,
             easing = LinearOutSlowInEasing
         )
-    ) { -it },
+    ) { -it / 2 },
     banner: @Composable BoxScope.() -> Unit
 ) {
     Box {

@@ -1,7 +1,6 @@
 package com.programmersbox.common
 
 import androidx.compose.animation.*
-import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
@@ -206,8 +205,6 @@ internal fun DrawerInfo(
                         if (vm.connectionError) {
                             topColor.animateTo(error)
                         } else {
-                            topColor.animateTo(Emerald)
-                            delay(2500)
                             topColor.animateTo(surface)
                         }
                     }
@@ -219,33 +216,57 @@ internal fun DrawerInfo(
                             ) { Icon(Icons.Default.MenuOpen, null) }
                         },
                         actions = {
-                            Icon(
-                                if (vm.connectionError) Icons.Default.LinkOff else Icons.Default.Link,
-                                null,
-                                tint = (if (vm.connectionError) MaterialTheme.colorScheme.error else Emerald).animate().value
-                            )
                             IconButton(
-                                onClick = { vm.showDiscovery() }
+                                onClick = { vm.showDiscovery() },
+                                colors = IconButtonDefaults.iconButtonColors(
+                                    contentColor = (if (vm.connectionError) MaterialTheme.colorScheme.error else Emerald)
+                                        .animate().value
+                                )
                             ) { Icon(Icons.Default.Wifi, null) }
                         },
                         colors = TopAppBarDefaults.smallTopAppBarColors(
-                            containerColor = topColor.value
+                            containerColor = topColor.value,
                         )
                     )
+
+                    var connectedState by remember(vm.connectionError) { mutableStateOf(!vm.connectionError) }
+
+                    LaunchedEffect(connectedState) {
+                        delay(2500)
+                        connectedState = false
+                    }
+
                     BannerBox(
-                        showBanner = vm.connectionError,
-                        bannerEnter = expandVertically(
-                            animationSpec = tween(
-                                durationMillis = 150,
-                                easing = LinearOutSlowInEasing
-                            )
-                        ) { -it / 2 },
-                        bannerExit = shrinkVertically(
-                            animationSpec = tween(
-                                durationMillis = 150,
-                                easing = LinearOutSlowInEasing
-                            )
-                        ) { -it / 2 }
+                        showBanner = connectedState
+                    ) {
+                        Surface(
+                            modifier = Modifier
+                                .align(Alignment.TopCenter)
+                                .animateContentSize()
+                                .fillMaxWidth(),
+                            shape = MaterialTheme.shapes.medium.copy(
+                                topStart = CornerSize(0.dp),
+                                topEnd = CornerSize(0.dp)
+                            ),
+                            tonalElevation = 4.dp,
+                            shadowElevation = 10.dp,
+                            color = Emerald
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(4.dp),
+                                modifier = Modifier.padding(bottom = 4.dp)
+                            ) {
+                                Text(
+                                    "Connected",
+                                    color = MaterialTheme.colorScheme.surface
+                                )
+                            }
+                        }
+                    }
+
+                    BannerBox(
+                        showBanner = vm.connectionError
                     ) {
                         Surface(
                             modifier = Modifier
