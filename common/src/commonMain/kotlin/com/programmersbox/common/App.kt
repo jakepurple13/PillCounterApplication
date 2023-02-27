@@ -279,11 +279,17 @@ internal fun DrawerInfo(
                                 ) {
                                     Button(
                                         onClick = { vm.showDiscovery() },
-                                        modifier = Modifier.weight(1f)
+                                        modifier = Modifier.weight(1f),
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = MaterialTheme.colorScheme.error
+                                        )
                                     ) { Text("Find Pill Counter") }
                                     Button(
                                         onClick = { vm.reconnect() },
                                         modifier = Modifier.weight(1f),
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = MaterialTheme.colorScheme.error
+                                        ),
                                         enabled = !vm.isConnectionLoading
                                     ) { Text("Retry Connection") }
                                 }
