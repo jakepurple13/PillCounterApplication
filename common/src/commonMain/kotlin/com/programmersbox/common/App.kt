@@ -18,7 +18,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import moe.tlaster.precompose.navigation.NavHost
 import moe.tlaster.precompose.navigation.Navigator
@@ -223,15 +222,8 @@ internal fun DrawerInfo(
                         )
                     )
 
-                    var connectedState by remember(vm.connectionError) { mutableStateOf(!vm.connectionError) }
-
-                    LaunchedEffect(connectedState) {
-                        delay(2500)
-                        connectedState = false
-                    }
-
                     BannerBox(
-                        showBanner = connectedState
+                        showBanner = vm.connectedState
                     ) {
                         Surface(
                             modifier = Modifier

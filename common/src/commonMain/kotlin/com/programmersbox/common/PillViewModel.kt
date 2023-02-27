@@ -3,6 +3,7 @@ package com.programmersbox.common
 import androidx.compose.runtime.*
 import io.ktor.http.*
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import moe.tlaster.precompose.navigation.Navigator
@@ -27,7 +28,18 @@ public class PillViewModel(
         pillWeightList.any { it.pillWeights.uuid == pillCount.pillWeights.uuid }
     }
 
+    internal var connectedState by mutableStateOf(true)
+
     init {
+        snapshotFlow { connectionError }
+            .filter { !it }
+            .onEach {
+                connectedState = true
+                delay(2500)
+                connectedState = false
+            }
+            .launchIn(viewModelScope)
+
         viewModelScope.launch {
             db.list()
                 .onEach {
@@ -70,7 +82,6 @@ public class PillViewModel(
 
         network!!.socketConnection()
             .catch {
-                it.printStackTrace()
                 connectionError = true
                 emit(Result.failure(it))
             }
@@ -84,10 +95,7 @@ public class PillViewModel(
                             db.updateCurrentCountInfo(pill)
                         }
                     }
-                    .onFailure {
-                        it.printStackTrace()
-                        connectionError = true
-                    }
+                    .onFailure { connectionError = true }
             }
             .launchIn(viewModelScope)
     }

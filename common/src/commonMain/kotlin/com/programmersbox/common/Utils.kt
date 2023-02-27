@@ -24,13 +24,13 @@ internal fun BannerBox(
             durationMillis = 150,
             easing = LinearOutSlowInEasing
         )
-    ) { -it / 2 },
+    ),
     bannerExit: ExitTransition = shrinkVertically(
         animationSpec = tween(
             durationMillis = 150,
             easing = LinearOutSlowInEasing
         )
-    ) { -it / 2 },
+    ),
     banner: @Composable BoxScope.() -> Unit
 ) {
     Box {
