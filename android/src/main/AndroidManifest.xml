@@ -9,6 +9,7 @@
             android:allowBackup="false"
             android:supportsRtl="true"
             android:usesCleartextTraffic="true"
+            android:enableOnBackInvokedCallback="true"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar">
         <activity android:name=".MainActivity" android:exported="true">
             <intent-filter>

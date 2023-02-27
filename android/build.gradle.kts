@@ -15,6 +15,7 @@ repositories {
 dependencies {
     implementation(project(":common"))
     implementation("androidx.activity:activity-compose:1.6.1")
+    implementation("com.google.accompanist:accompanist-systemuicontroller:0.29.1-alpha")
 }
 
 android {

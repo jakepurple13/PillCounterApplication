@@ -5,7 +5,6 @@ import io.ktor.http.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import moe.tlaster.precompose.navigation.NavOptions
 import moe.tlaster.precompose.navigation.Navigator
 
 public class PillViewModel(
@@ -118,12 +117,9 @@ public class PillViewModel(
     }
 
     public fun showMainScreen() {
-        navigator.navigate(
-            PillState.MainScreen,
-            NavOptions(
-                launchSingleTop = true
-            )
-        )
+        while (navigator.canGoBack) {
+            navigator.goBack()
+        }
     }
 
     internal fun showDiscovery() {

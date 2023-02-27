@@ -39,43 +39,61 @@ internal fun App(
     CompositionLocalProvider(
         LocalNavigator provides navigator,
     ) {
-        NavHost(
-            navigator = navigator,
-            initialRoute = PillState.MainScreen.route,
-        ) {
-            scene(
-                PillState.MainScreen.route,
-                navTransition = NavTransition(
-                    createTransition = slideInHorizontally { width -> -width } + fadeIn(),
-                    resumeTransition = slideInHorizontally { width -> -width } + fadeIn(),
-                    pauseTransition = slideOutHorizontally { width -> width } + fadeOut(),
-                    destroyTransition = slideOutHorizontally { width -> width } + fadeOut()
-                )
+        Surface {
+            NavHost(
+                navigator = navigator,
+                initialRoute = PillState.MainScreen.route,
             ) {
-                DrawerInfo(
-                    vm = vm,
-                    drawerClick = vm::onDrawerItemMainScreenClick,
-                    homeSelected = true
-                ) { MainScreen(vm) }
+                scene(
+                    PillState.MainScreen.route,
+                    navTransition = NavTransition(
+                        createTransition = slideInHorizontally { width -> -width },
+                        resumeTransition = slideInHorizontally { width -> -width },
+                        pauseTransition = slideOutHorizontally { width -> width },
+                        destroyTransition = slideOutHorizontally { width -> width }
+                    )
+                ) {
+                    DrawerInfo(
+                        vm = vm,
+                        drawerClick = vm::onDrawerItemMainScreenClick,
+                        homeSelected = true
+                    ) { MainScreen(vm) }
+                }
+                scene(
+                    PillState.NewPill.route,
+                    navTransition = NavTransition(
+                        createTransition = slideInHorizontally { width -> -width },
+                        resumeTransition = slideInHorizontally { width -> -width },
+                        pauseTransition = slideOutHorizontally { width -> width },
+                        destroyTransition = slideOutHorizontally { width -> width }
+                    )
+                ) {
+                    val newPillVm = viewModel(NewPillViewModel::class) { NewPillViewModel(vm) }
+                    DrawerInfo(
+                        vm = vm,
+                        drawerClick = newPillVm::recalibrate,
+                        newPillSelected = true
+                    ) { NewPill(newPillVm) }
+                }
+                scene(
+                    PillState.BluetoothDiscovery.route,
+                    navTransition = NavTransition(
+                        createTransition = slideInVertically { height -> height },
+                        resumeTransition = slideInVertically { height -> height },
+                        pauseTransition = slideOutVertically { height -> -height },
+                        destroyTransition = slideOutHorizontally { height -> -height }
+                    )
+                ) { BluetoothDiscovery(vm) }
+                scene(
+                    PillState.Discovery.route,
+                    navTransition = NavTransition(
+                        createTransition = slideInVertically { height -> height },
+                        resumeTransition = slideInVertically { height -> height },
+                        pauseTransition = slideOutVertically { height -> -height },
+                        destroyTransition = slideOutHorizontally { height -> -height }
+                    )
+                ) { DiscoveryScreen(vm) }
             }
-            scene(
-                PillState.NewPill.route,
-                navTransition = NavTransition(
-                    createTransition = slideInHorizontally { width -> width } + fadeIn(),
-                    resumeTransition = slideInHorizontally { width -> width } + fadeIn(),
-                    pauseTransition = slideOutHorizontally { width -> -width } + fadeOut(),
-                    destroyTransition = slideOutHorizontally { width -> -width } + fadeOut()
-                )
-            ) {
-                val newPillVm = viewModel(NewPillViewModel::class) { NewPillViewModel(vm) }
-                DrawerInfo(
-                    vm = vm,
-                    drawerClick = newPillVm::recalibrate,
-                    newPillSelected = true
-                ) { NewPill(newPillVm) }
-            }
-            scene(PillState.BluetoothDiscovery.route) { BluetoothDiscovery(vm) }
-            scene(PillState.Discovery.route) { DiscoveryScreen(vm) }
         }
     }
 }
@@ -223,7 +241,8 @@ internal fun DrawerInfo(
                                     ) { Text("Find Pill Counter") }
                                     Button(
                                         onClick = { vm.reconnect() },
-                                        modifier = Modifier.weight(1f)
+                                        modifier = Modifier.weight(1f),
+                                        enabled = !vm.isConnectionLoading
                                     ) { Text("Retry Connection") }
                                 }
                                 if (vm.isConnectionLoading) CircularProgressIndicator()
