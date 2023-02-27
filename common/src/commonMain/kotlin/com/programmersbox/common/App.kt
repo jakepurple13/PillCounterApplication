@@ -198,16 +198,6 @@ internal fun DrawerInfo(
         Scaffold(
             topBar = {
                 Column {
-                    val error = MaterialTheme.colorScheme.errorContainer
-                    val surface = MaterialTheme.colorScheme.surface
-                    val topColor = remember { Animatable(surface) }
-                    LaunchedEffect(vm.connectionError) {
-                        if (vm.connectionError) {
-                            topColor.animateTo(error)
-                        } else {
-                            topColor.animateTo(surface)
-                        }
-                    }
                     TopAppBar(
                         title = { Text("Pill Counter") },
                         navigationIcon = {
@@ -225,7 +215,11 @@ internal fun DrawerInfo(
                             ) { Icon(Icons.Default.Wifi, null) }
                         },
                         colors = TopAppBarDefaults.smallTopAppBarColors(
-                            containerColor = topColor.value,
+                            containerColor = if (vm.connectionError) {
+                                MaterialTheme.colorScheme.errorContainer
+                            } else {
+                                MaterialTheme.colorScheme.surface
+                            }.animate().value,
                         )
                     )
 
