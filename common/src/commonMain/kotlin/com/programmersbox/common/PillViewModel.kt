@@ -5,12 +5,16 @@ import io.ktor.http.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import moe.tlaster.precompose.navigation.NavOptions
+import moe.tlaster.precompose.navigation.Navigator
 
-public class PillViewModel(private val scope: CoroutineScope) {
+public class PillViewModel(
+    private val navigator: Navigator,
+    private val viewModelScope: CoroutineScope
+) {
+    internal val db = Database(viewModelScope)
 
-    private val db = Database(scope)
-
-    private var network: Network? = null
+    internal var network: Network? = null
     internal var isConnectionLoading by mutableStateOf(false)
 
     public var pillCount: PillCount by mutableStateOf(PillCount(0.0, PillWeights()))
@@ -18,19 +22,14 @@ public class PillViewModel(private val scope: CoroutineScope) {
 
     internal val pillWeightList = mutableStateListOf<PillCount>()
 
-    public var pillState: PillState by mutableStateOf(PillState.MainScreen)
-    private var previousPillState: PillState = PillState.MainScreen
-
-    internal var newPill by mutableStateOf(PillWeights())
-
-    internal var isNewPillLoading by mutableStateOf(false)
+    internal var connectionError by mutableStateOf(false)
 
     internal val pillAlreadySaved by derivedStateOf {
         pillWeightList.any { it.pillWeights.uuid == pillCount.pillWeights.uuid }
     }
 
     init {
-        scope.launch {
+        viewModelScope.launch {
             db.list()
                 .onEach {
                     pillWeightList.clear()
@@ -39,13 +38,13 @@ public class PillViewModel(private val scope: CoroutineScope) {
                 .launchIn(this)
         }
 
-        scope.launch {
+        viewModelScope.launch {
             db.currentPill()
                 .onEach { pillCount = it }
                 .launchIn(this)
         }
 
-        scope.launch {
+        viewModelScope.launch {
             db.url()
                 .filter { it.isNotEmpty() }
                 .onEach { connectToNetwork(it) }
@@ -54,11 +53,11 @@ public class PillViewModel(private val scope: CoroutineScope) {
     }
 
     internal fun changeNetwork(url: String) {
-        scope.launch { db.saveUrl(url) }
+        viewModelScope.launch { db.saveUrl(url) }
     }
 
     internal fun reconnect() {
-        scope.launch {
+        viewModelScope.launch {
             if (!isConnectionLoading) db.url().firstOrNull()?.let { connectToNetwork(it) }
         }
     }
@@ -79,58 +78,23 @@ public class PillViewModel(private val scope: CoroutineScope) {
                 isConnectionLoading = false
                 result
                     .onSuccess { pill ->
-                        if (pillState == PillState.Error)
-                            pillState = PillState.MainScreen
+                        connectionError = false
                         db.updateCurrentPill(pill)
                         if (pillWeightList.any { it.pillWeights.uuid == pill.pillWeights.uuid }) {
                             db.updateCurrentCountInfo(pill)
                         }
                     }
-                    .onFailure { pillState = PillState.Error }
+                    .onFailure { connectionError = true }
             }
-            .launchIn(scope)
+            .launchIn(viewModelScope)
     }
 
-    internal fun onDrawerItemClick(pillWeights: PillWeights) {
-        when (pillState) {
-            PillState.MainScreen -> sendNewConfig(pillWeights)
-            PillState.NewPill -> recalibrate(pillWeights)
-            else -> {}
-        }
-    }
-
-    private fun recalibrate(pillWeights: PillWeights) {
-        newPill = pillWeights
-    }
-
-    internal fun updatePill(
-        name: String = newPill.name,
-        pillWeight: Double = newPill.pillWeight,
-        bottleWeight: Double = newPill.bottleWeight
-    ) {
-        newPill = newPill.copy(name = name, bottleWeight = bottleWeight, pillWeight = pillWeight)
-    }
-
-    internal fun calibratePillWeight() {
-        network?.pillWeightCalibration()
-            ?.onStart { isNewPillLoading = true }
-            ?.onEach { updatePill(pillWeight = it.pillWeight) }
-            ?.onCompletion { isNewPillLoading = false }
-            ?.catch { it.printStackTrace() }
-            ?.launchIn(scope)
-    }
-
-    internal fun calibrateBottleWeight() {
-        network?.pillWeightCalibration()
-            ?.onStart { isNewPillLoading = true }
-            ?.onEach { updatePill(bottleWeight = it.bottleWeight) }
-            ?.onCompletion { isNewPillLoading = false }
-            ?.catch { it.printStackTrace() }
-            ?.launchIn(scope)
+    internal fun onDrawerItemMainScreenClick(pillWeights: PillWeights) {
+        sendNewConfig(pillWeights)
     }
 
     internal fun sendNewConfig(pillWeights: PillWeights) {
-        scope.launch {
+        viewModelScope.launch {
             network?.updateConfig(pillWeights)
                 ?.onSuccess { println(it) }
                 ?.onFailure { it.printStackTrace() }
@@ -138,46 +102,38 @@ public class PillViewModel(private val scope: CoroutineScope) {
     }
 
     internal fun updateConfig(pillCount: PillCount) {
-        scope.launch { db.updateInfo(pillCount) }
+        viewModelScope.launch { db.updateInfo(pillCount) }
     }
 
     internal fun saveNewConfig(pillWeights: PillWeights) {
-        scope.launch { db.savePillWeightInfo(pillWeights) }
+        viewModelScope.launch { db.savePillWeightInfo(pillWeights) }
     }
 
     internal fun removeConfig(pillWeights: PillWeights) {
-        scope.launch { db.removePillWeightInfo(pillWeights) }
+        viewModelScope.launch { db.removePillWeightInfo(pillWeights) }
     }
 
     internal fun showNewPill() {
-        if (previousPillState == PillState.Error) {
-            pillState = PillState.Error
-        } else {
-            previousPillState = pillState
-            pillState = PillState.NewPill
-        }
+        navigator.navigateToNewPill()
     }
 
     public fun showMainScreen() {
-        if (previousPillState == PillState.Error) {
-            pillState = PillState.Error
-        } else {
-            previousPillState = pillState
-            pillState = PillState.MainScreen
-        }
+        navigator.navigate(
+            PillState.MainScreen,
+            NavOptions(
+                launchSingleTop = true
+            )
+        )
     }
 
     internal fun showDiscovery() {
-        previousPillState = pillState
-        pillState = PillState.Discovery
-    }
-
-    internal fun showBLEDiscovery() {
-        previousPillState = pillState
-        pillState = PillState.BluetoothDiscovery
+        navigator.navigateToDiscovery()
     }
 }
 
-public enum class PillState {
-    MainScreen, NewPill, Discovery, Error, BluetoothDiscovery
+public enum class PillState(internal val route: String = "") {
+    MainScreen("home"),
+    NewPill("new_pill"),
+    Discovery("discovery"),
+    BluetoothDiscovery("bluetooth")
 }

@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
+import moe.tlaster.precompose.viewmodel.viewModelScope
 import java.net.InetAddress
 import javax.jmdns.JmDNS
 import javax.jmdns.ServiceEvent
@@ -100,7 +101,7 @@ internal actual class Database actual constructor(scope: CoroutineScope) {
 
 internal actual fun DiscoveryViewModel.discover() {
     isSearching = true
-    scope.launch(Dispatchers.IO) {
+    viewModelScope.launch(Dispatchers.IO) {
         val jmdns = JmDNS.create(InetAddress.getByName("10.0.0.2"), "HOST")
         jmdns.addServiceListener(
             "_http._tcp.local.",

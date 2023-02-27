@@ -13,11 +13,13 @@ import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberTrayState
 import com.programmersbox.common.PillViewModel
 import com.programmersbox.common.UIShow
+import moe.tlaster.precompose.navigation.Navigator
 import java.util.prefs.Preferences
 
 fun main() = application {
     val scope = rememberCoroutineScope()
-    val pillViewModel = remember { PillViewModel(scope) }
+    val navigator = remember { Navigator() }
+    val pillViewModel = remember { PillViewModel(navigator, scope) }
     val desktopViewModel = remember { DesktopViewModel() }
     var isOpen by remember { mutableStateOf(true) }
     var openPreferences by remember { mutableStateOf(false) }
@@ -78,7 +80,7 @@ fun main() = application {
         WindowWithBar(
             onCloseRequest = { isOpen = false },
             windowTitle = "PillCounter",
-        ) { UIShow(scope, pillViewModel) }
+        ) { UIShow(navigator, pillViewModel) }
     }
 
     if (openPreferences) {

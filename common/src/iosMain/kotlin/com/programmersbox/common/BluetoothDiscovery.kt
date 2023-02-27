@@ -1,10 +1,7 @@
 package com.programmersbox.common
 
 import androidx.compose.animation.*
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -15,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import com.benasher44.uuid.uuidFrom
 import com.juul.kable.*
 import com.juul.kable.logs.Logging
 import com.splendo.kaluga.bluetooth.BluetoothBuilder
@@ -73,7 +71,11 @@ private fun BluetoothSearching(vm: BluetoothViewModel) {
             }
         }
     ) { padding ->
-        Box(Modifier.padding(padding)) {
+        Box(
+            Modifier
+                .fillMaxSize()
+                .padding(padding)
+        ) {
             LazyColumn {
                 items(vm.advertisementList) {
                     Card(onClick = { vm.click(it) }) {
@@ -137,6 +139,7 @@ private fun WifiConnect(vm: BluetoothViewModel) {
                             onValueChange = { password = it },
                             visualTransformation = if (hidePassword) PasswordVisualTransformation() else VisualTransformation.None,
                             modifier = Modifier.fillMaxWidth(),
+                            singleLine = true,
                             label = { Text("Password") },
                             trailingIcon = {
                                 IconToggleButton(
@@ -189,7 +192,7 @@ internal class BluetoothViewModel(private val viewModel: PillViewModel) {
 
     private val scanner by lazy {
         Scanner {
-            filters = null//listOf(Filter.Service(SERVICE_WIRELESS_SERVICE))
+            filters = listOf(Filter.Service(uuidFrom(SERVICE_WIRELESS_SERVICE)))
             logging {
                 level = Logging.Level.Events
                 data = Logging.DataProcessor { bytes ->
@@ -261,8 +264,8 @@ internal class BluetoothViewModel(private val viewModel: PillViewModel) {
 
             peripheral?.observe(
                 characteristicOf(
-                    SERVICE_WIRELESS_SERVICE.toString(),
-                    CHARACTERISTIC_WIRELESS_COMMANDER_RESPONSE.toString()
+                    SERVICE_WIRELESS_SERVICE,
+                    CHARACTERISTIC_WIRELESS_COMMANDER_RESPONSE
                 )
             )
                 ?.onEach {
@@ -317,8 +320,8 @@ internal class BluetoothViewModel(private val viewModel: PillViewModel) {
         scannerScope.launch {
             peripheral?.write(
                 characteristicOf(
-                    SERVICE_WIRELESS_SERVICE.toString(),
-                    CHARACTERISTIC_WIRELESS_COMMANDER.toString()
+                    SERVICE_WIRELESS_SERVICE,
+                    CHARACTERISTIC_WIRELESS_COMMANDER
                 ),
                 SCAN.encodeToByteArray(),
                 WriteType.WithResponse
@@ -330,8 +333,8 @@ internal class BluetoothViewModel(private val viewModel: PillViewModel) {
         scannerScope.launch {
             peripheral?.write(
                 characteristicOf(
-                    SERVICE_WIRELESS_SERVICE.toString(),
-                    CHARACTERISTIC_WIRELESS_COMMANDER.toString()
+                    SERVICE_WIRELESS_SERVICE,
+                    CHARACTERISTIC_WIRELESS_COMMANDER
                 ),
                 GET_NETWORKS.encodeToByteArray(),
                 WriteType.WithResponse
@@ -362,13 +365,14 @@ internal class BluetoothViewModel(private val viewModel: PillViewModel) {
                         .forEach {
                             p.write(
                                 characteristicOf(
-                                    SERVICE_WIRELESS_SERVICE.toString(),
-                                    CHARACTERISTIC_WIRELESS_COMMANDER.toString()
+                                    SERVICE_WIRELESS_SERVICE,
+                                    CHARACTERISTIC_WIRELESS_COMMANDER
                                 ),
                                 it,
                                 WriteType.WithResponse
                             )
                         }
+                    p.disconnect()
                     viewModel.showMainScreen()
                 }
             }

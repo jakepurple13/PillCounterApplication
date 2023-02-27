@@ -1,6 +1,5 @@
 package com.programmersbox.common
 
-import android.annotation.SuppressLint
 import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -13,21 +12,24 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.juul.kable.*
 import com.juul.kable.logs.Logging
-import com.splendo.kaluga.bluetooth.*
+import com.splendo.kaluga.bluetooth.BluetoothBuilder
+import com.splendo.kaluga.bluetooth.uuidFrom
 import com.splendo.kaluga.permissions.base.Permissions
 import com.splendo.kaluga.permissions.base.PermissionsBuilder
 import com.splendo.kaluga.permissions.bluetooth.registerBluetoothPermission
 import com.splendo.kaluga.permissions.location.registerLocationPermission
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import moe.tlaster.precompose.ui.viewModel
+import moe.tlaster.precompose.viewmodel.ViewModel
+import moe.tlaster.precompose.viewmodel.viewModelScope
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -59,7 +61,8 @@ private fun BluetoothSearching(vm: BluetoothViewModel) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Find PillCounter") }
+                title = { Text("Find PillCounter") },
+                navigationIcon = { BackButton() }
             )
         },
         bottomBar = {
@@ -72,7 +75,11 @@ private fun BluetoothSearching(vm: BluetoothViewModel) {
             }
         }
     ) { padding ->
-        Box(Modifier.padding(padding)) {
+        Box(
+            Modifier
+                .fillMaxSize()
+                .padding(padding)
+        ) {
             LazyColumn {
                 items(vm.advertisementList) {
                     Card(onClick = { vm.click(it) }) {
@@ -103,7 +110,8 @@ private fun WifiConnect(vm: BluetoothViewModel) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Connect PillCounter to Wifi") }
+                title = { Text("Connect PillCounter to Wifi") },
+                navigationIcon = { BackButton() }
             )
         },
         bottomBar = {
@@ -134,6 +142,7 @@ private fun WifiConnect(vm: BluetoothViewModel) {
                         OutlinedTextField(
                             value = password,
                             onValueChange = { password = it },
+                            singleLine = true,
                             visualTransformation = if (hidePassword) PasswordVisualTransformation() else VisualTransformation.None,
                             modifier = Modifier.fillMaxWidth(),
                             label = { Text("Password") },
@@ -182,18 +191,16 @@ internal enum class BluetoothState {
     Searching, Wifi, Checking
 }
 
-@SuppressLint("MissingPermission")
 internal class BluetoothViewModel(private val viewModel: PillViewModel) : ViewModel() {
 
     private val scannerScope = CoroutineScope(Dispatchers.Main + Job())
 
     private val scanner by lazy {
         Scanner {
-            filters = null//listOf(Filter.Service(SERVICE_WIRELESS_SERVICE))
+            filters = listOf(Filter.Service(uuidFrom(SERVICE_WIRELESS_SERVICE)))
             logging {
                 level = Logging.Level.Events
                 data = Logging.DataProcessor { bytes ->
-                    // todo: Convert `bytes` to desired String representation, for example:
                     bytes.joinToString { byte -> byte.toString() } // Show data as integer representation of bytes.
                 }
             }
@@ -260,8 +267,8 @@ internal class BluetoothViewModel(private val viewModel: PillViewModel) : ViewMo
 
             peripheral?.observe(
                 characteristicOf(
-                    SERVICE_WIRELESS_SERVICE.toString(),
-                    CHARACTERISTIC_WIRELESS_COMMANDER_RESPONSE.toString()
+                    SERVICE_WIRELESS_SERVICE,
+                    CHARACTERISTIC_WIRELESS_COMMANDER_RESPONSE
                 )
             )
                 ?.onEach {
@@ -282,6 +289,8 @@ internal class BluetoothViewModel(private val viewModel: PillViewModel) : ViewMo
                     val value = it.removeSuffix("\n")
                     val command = json.decodeFromString<SingleCommand>(value)
                     println(command)
+                    //TODO: Need to show loading screen as connecting to wifi
+                    // and need to show if it was a success
                     when (command.c) {
                         0 -> {
                             wifiNetworks.clear()
@@ -316,8 +325,8 @@ internal class BluetoothViewModel(private val viewModel: PillViewModel) : ViewMo
         scannerScope.launch {
             peripheral?.write(
                 characteristicOf(
-                    SERVICE_WIRELESS_SERVICE.toString(),
-                    CHARACTERISTIC_WIRELESS_COMMANDER.toString()
+                    SERVICE_WIRELESS_SERVICE,
+                    CHARACTERISTIC_WIRELESS_COMMANDER
                 ),
                 SCAN.toByteArray(),
                 WriteType.WithResponse
@@ -329,8 +338,8 @@ internal class BluetoothViewModel(private val viewModel: PillViewModel) : ViewMo
         scannerScope.launch {
             peripheral?.write(
                 characteristicOf(
-                    SERVICE_WIRELESS_SERVICE.toString(),
-                    CHARACTERISTIC_WIRELESS_COMMANDER.toString()
+                    SERVICE_WIRELESS_SERVICE,
+                    CHARACTERISTIC_WIRELESS_COMMANDER
                 ),
                 GET_NETWORKS.toByteArray(),
                 WriteType.WithResponse
@@ -361,13 +370,14 @@ internal class BluetoothViewModel(private val viewModel: PillViewModel) : ViewMo
                         .forEach {
                             p.write(
                                 characteristicOf(
-                                    SERVICE_WIRELESS_SERVICE.toString(),
-                                    CHARACTERISTIC_WIRELESS_COMMANDER.toString()
+                                    SERVICE_WIRELESS_SERVICE,
+                                    CHARACTERISTIC_WIRELESS_COMMANDER
                                 ),
                                 it,
                                 WriteType.WithResponse
                             )
                         }
+                    p.disconnect()
                     viewModel.showMainScreen()
                 }
             }
@@ -375,9 +385,11 @@ internal class BluetoothViewModel(private val viewModel: PillViewModel) : ViewMo
     }
 
     companion object {
-        val SERVICE_WIRELESS_SERVICE = UUID.fromString("e081fec0-f757-4449-b9c9-bfa83133f7fc")
-        val CHARACTERISTIC_WIRELESS_COMMANDER = UUID.fromString("e081fec1-f757-4449-b9c9-bfa83133f7fc")
-        val CHARACTERISTIC_WIRELESS_COMMANDER_RESPONSE = UUID.fromString("e081fec2-f757-4449-b9c9-bfa83133f7fc")
+        const val SERVICE_WIRELESS_SERVICE = "e081fec0-f757-4449-b9c9-bfa83133f7fc"
+        const val CHARACTERISTIC_WIRELESS_COMMANDER = "e081fec1-f757-4449-b9c9-bfa83133f7fc"
+        const val CHARACTERISTIC_WIRELESS_COMMANDER_RESPONSE = "e081fec2-f757-4449-b9c9-bfa83133f7fc"
+
+        //TODO: Use this for connection status
         const val CHARACTERISTIC_WIRELESS_CONNECTION_STATUS = "e081fec3-f757-4449-b9c9-bfa83133f7fc"
 
         private const val GET_NETWORKS = "{\"c\":0}\n"

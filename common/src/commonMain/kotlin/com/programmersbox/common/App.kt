@@ -7,6 +7,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -18,38 +19,80 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import moe.tlaster.precompose.navigation.NavHost
+import moe.tlaster.precompose.navigation.Navigator
+import moe.tlaster.precompose.navigation.rememberNavigator
+import moe.tlaster.precompose.navigation.transition.NavTransition
+import moe.tlaster.precompose.ui.viewModel
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
+internal val LocalNavigator = staticCompositionLocalOf<Navigator> { error("No NavController Found!") }
+
 @Composable
 internal fun App(
+    navigator: Navigator = rememberNavigator(),
     scope: CoroutineScope = rememberCoroutineScope(),
-    vm: PillViewModel = remember { PillViewModel(scope) },
+    vm: PillViewModel = remember { PillViewModel(navigator, scope) },
     backHandler: @Composable (PillViewModel) -> Unit = {}
 ) {
     backHandler(vm)
 
-    Surface {
-        Crossfade(vm.pillState) { target ->
-            when (target) {
-                PillState.Discovery -> DiscoveryScreen(vm)
-                PillState.BluetoothDiscovery -> BluetoothDiscovery(vm)
-                else -> HomeScreen(scope, vm)
+    CompositionLocalProvider(
+        LocalNavigator provides navigator,
+    ) {
+        NavHost(
+            navigator = navigator,
+            initialRoute = PillState.MainScreen.route,
+        ) {
+            scene(
+                PillState.MainScreen.route,
+                navTransition = NavTransition(
+                    createTransition = slideInHorizontally { width -> -width } + fadeIn(),
+                    resumeTransition = slideInHorizontally { width -> -width } + fadeIn(),
+                    pauseTransition = slideOutHorizontally { width -> width } + fadeOut(),
+                    destroyTransition = slideOutHorizontally { width -> width } + fadeOut()
+                )
+            ) {
+                DrawerInfo(
+                    vm = vm,
+                    drawerClick = vm::onDrawerItemMainScreenClick,
+                    homeSelected = true
+                ) { MainScreen(vm) }
             }
+            scene(
+                PillState.NewPill.route,
+                navTransition = NavTransition(
+                    createTransition = slideInHorizontally { width -> width } + fadeIn(),
+                    resumeTransition = slideInHorizontally { width -> width } + fadeIn(),
+                    pauseTransition = slideOutHorizontally { width -> -width } + fadeOut(),
+                    destroyTransition = slideOutHorizontally { width -> -width } + fadeOut()
+                )
+            ) {
+                val newPillVm = viewModel { NewPillViewModel(vm) }
+                DrawerInfo(
+                    vm = vm,
+                    drawerClick = newPillVm::recalibrate,
+                    newPillSelected = true
+                ) { NewPill(newPillVm) }
+            }
+            scene(PillState.BluetoothDiscovery.route) { BluetoothDiscovery(vm) }
+            scene(PillState.Discovery.route) { DiscoveryScreen(vm) }
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
-internal fun HomeScreen(
-    scope: CoroutineScope,
-    vm: PillViewModel
+internal fun DrawerInfo(
+    vm: PillViewModel,
+    homeSelected: Boolean = false,
+    newPillSelected: Boolean = false,
+    drawerClick: (PillWeights) -> Unit,
+    content: @Composable () -> Unit
 ) {
+    val scope = rememberCoroutineScope()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     ModalNavigationDrawer(
         drawerState = drawerState,
-        gesturesEnabled = (vm.pillState != PillState.Error && vm.pillState != PillState.Discovery) ||
-                drawerState.isOpen,
         drawerContent = {
             ModalDrawerSheet {
                 Scaffold(
@@ -60,41 +103,6 @@ internal fun HomeScreen(
                                 IconButton(
                                     onClick = { scope.launch { drawerState.close() } }
                                 ) { Icon(Icons.Default.Close, null) }
-                            }
-                        )
-                    },
-                    bottomBar = {
-                        BottomAppBar(
-                            actions = {},
-                            floatingActionButton = {
-                                ExtendedFloatingActionButton(
-                                    onClick = {
-                                        when (vm.pillState) {
-                                            PillState.MainScreen -> vm.showNewPill()
-                                            PillState.NewPill -> vm.showMainScreen()
-                                            else -> {}
-                                        }
-                                    },
-                                    icon = {
-                                        Icon(
-                                            when (vm.pillState) {
-                                                PillState.MainScreen -> Icons.Default.Add
-                                                PillState.NewPill -> Icons.Default.Medication
-                                                else -> Icons.Default.NotAccessible
-                                            },
-                                            null
-                                        )
-                                    },
-                                    text = {
-                                        Text(
-                                            when (vm.pillState) {
-                                                PillState.MainScreen -> "Add New Pill"
-                                                PillState.NewPill -> "Return to Home Screen"
-                                                else -> ""
-                                            }
-                                        )
-                                    }
-                                )
                             }
                         )
                     }
@@ -141,7 +149,7 @@ internal fun HomeScreen(
                                     }
                                 } else {
                                     ElevatedCard(
-                                        onClick = { vm.onDrawerItemClick(it.pillWeights) }
+                                        onClick = { drawerClick(it.pillWeights) }
                                     ) {
                                         ListItem(
                                             headlineText = { Text(it.pillWeights.name) },
@@ -170,32 +178,70 @@ internal fun HomeScreen(
     ) {
         Scaffold(
             topBar = {
-                TopAppBar(
-                    title = { Text("Pill Counter") },
-                    navigationIcon = {
-                        IconButton(
-                            onClick = { scope.launch { drawerState.open() } }
-                        ) { Icon(Icons.Default.MenuOpen, null) }
-                    },
-                    actions = {
-                        AnimatedVisibility(vm.pillState != PillState.Discovery) {
+                Column {
+                    TopAppBar(
+                        title = { Text("Pill Counter") },
+                        navigationIcon = {
+                            IconButton(
+                                onClick = { scope.launch { drawerState.open() } }
+                            ) { Icon(Icons.Default.MenuOpen, null) }
+                        },
+                        actions = {
                             IconButton(
                                 onClick = { vm.showDiscovery() }
                             ) { Icon(Icons.Default.Refresh, null) }
                         }
+                    )
+                    BannerBox(
+                        showBanner = vm.connectionError
+                    ) {
+                        Surface(
+                            modifier = Modifier
+                                .align(Alignment.TopCenter)
+                                .animateContentSize()
+                                .fillMaxWidth(),
+                            shape = MaterialTheme.shapes.medium.copy(
+                                topStart = CornerSize(0.dp),
+                                topEnd = CornerSize(0.dp)
+                            ),
+                            tonalElevation = 4.dp,
+                            shadowElevation = 10.dp,
+                            color = MaterialTheme.colorScheme.errorContainer
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.SpaceEvenly
+                            ) {
+                                Text("Something went wrong with the connection")
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                    modifier = Modifier.padding(horizontal = 4.dp)
+                                ) {
+                                    Button(
+                                        onClick = { vm.showDiscovery() },
+                                        modifier = Modifier.weight(1f)
+                                    ) { Text("Find Pill Counter") }
+                                    Button(
+                                        onClick = { vm.reconnect() },
+                                        modifier = Modifier.weight(1f)
+                                    ) { Text("Retry Connection") }
+                                }
+                                if (vm.isConnectionLoading) CircularProgressIndicator()
+                            }
+                        }
                     }
-                )
+                }
             },
             bottomBar = {
                 BottomAppBar {
                     NavigationBarItem(
-                        selected = vm.pillState == PillState.MainScreen,
+                        selected = homeSelected,
                         icon = { Icon(Icons.Default.Medication, null) },
                         label = { Text("Home") },
                         onClick = { vm.showMainScreen() }
                     )
                     NavigationBarItem(
-                        selected = vm.pillState == PillState.NewPill,
+                        selected = newPillSelected,
                         icon = { Icon(Icons.Default.Add, null) },
                         label = { Text("Add New Pill") },
                         onClick = { vm.showNewPill() }
@@ -203,77 +249,8 @@ internal fun HomeScreen(
                 }
             }
         ) { padding ->
-            Crossfade(vm.pillState) { target ->
-                Box(
-                    Modifier
-                        .fillMaxSize()
-                        .padding(padding)
-                ) {
-                    when (target) {
-                        PillState.MainScreen -> MainScreen(vm)
-                        PillState.NewPill -> NewPill(vm)
-                        PillState.Error -> ErrorScreen(vm)
-                        else -> {}
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-internal fun BoxScope.ErrorScreen(viewModel: PillViewModel) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .animateContentSize()
-            .align(Alignment.Center),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceEvenly
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceEvenly
-        ) {
-            Icon(
-                Icons.Default.Warning,
-                null,
-                tint = MaterialTheme.colorScheme.error
-            )
-            Text("Something went wrong with the connection")
-            Button(onClick = { viewModel.showDiscovery() }) {
-                Text("Find Pill Counter")
-            }
-            Button(onClick = { viewModel.reconnect() }) {
-                Text("Retry Connection")
-            }
-            if (viewModel.isConnectionLoading) CircularProgressIndicator()
-        }
-        OutlinedCard {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.SpaceEvenly
-            ) {
-                Text("Last Accessed")
-                Text(viewModel.pillCount.pillWeights.name)
-                Text(
-                    "${viewModel.pillCount.formattedCount()} pills",
-                    style = MaterialTheme.typography.titleLarge
-                )
-                Row(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        "Pill Weight: ${viewModel.pillCount.pillWeights.pillWeight}",
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.weight(1f)
-                    )
-                    Text(
-                        "Bottle Weight: ${viewModel.pillCount.pillWeights.bottleWeight}",
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
+            Box(Modifier.padding(padding)) {
+                content()
             }
         }
     }
@@ -281,7 +258,8 @@ internal fun BoxScope.ErrorScreen(viewModel: PillViewModel) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun NewPill(viewModel: PillViewModel) {
+internal fun NewPill(viewModel: NewPillViewModel) {
+    val navigator = LocalNavigator.current
     Scaffold(
         bottomBar = {
             BottomAppBar {
@@ -294,7 +272,7 @@ internal fun NewPill(viewModel: PillViewModel) {
                         }
                         viewModel.saveNewConfig(pill)
                         viewModel.sendNewConfig(pill)
-                        viewModel.showMainScreen()
+                        navigator.goBack()
                         viewModel.newPill = PillWeights()
                     },
                     modifier = Modifier

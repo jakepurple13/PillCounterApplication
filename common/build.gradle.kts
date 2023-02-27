@@ -15,8 +15,16 @@ version = "1.0-SNAPSHOT"
 
 @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
 kotlin {
-    android()
-    jvm("desktop")
+    android {
+        compilations.all {
+            kotlinOptions.jvmTarget = "11"
+        }
+    }
+    jvm("desktop") {
+        compilations.all {
+            kotlinOptions.jvmTarget = "11"
+        }
+    }
     js(IR) {
         browser()
     }
@@ -54,6 +62,7 @@ kotlin {
                 api("com.splendo.kaluga:bluetooth:0.5.0")
                 api("com.splendo.kaluga:permissions:0.5.0")
                 api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4!!")
+                api("moe.tlaster:precompose:1.3.14")
             }
         }
 

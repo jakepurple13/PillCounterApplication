@@ -1,7 +1,6 @@
 package com.programmersbox.common
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import com.programmersbox.database.PillWeightDatabase
 import kotlinx.coroutines.CoroutineScope
@@ -11,6 +10,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
+import moe.tlaster.precompose.navigation.Navigator
+import moe.tlaster.precompose.viewmodel.viewModelScope
 import java.net.InetAddress
 import java.util.*
 import javax.jmdns.JmDNS
@@ -23,10 +24,10 @@ public actual fun getPlatformName(): String {
 
 @Composable
 public fun UIShow(
-    scope: CoroutineScope = rememberCoroutineScope(),
-    vm: PillViewModel = remember { PillViewModel(scope) },
+    navigator: Navigator,
+    vm: PillViewModel,
 ) {
-    App(scope, vm)
+    App(navigator, rememberCoroutineScope(), vm)
 }
 
 internal actual class Database actual constructor(scope: CoroutineScope) {
@@ -102,7 +103,7 @@ internal actual class Database actual constructor(scope: CoroutineScope) {
 
 internal actual fun DiscoveryViewModel.discover() {
     isSearching = true
-    scope.launch(Dispatchers.IO) {
+    viewModelScope.launch(Dispatchers.IO) {
         val jmdns = JmDNS.create(InetAddress.getLocalHost(), "HOST")
         jmdns.addServiceListener(
             "_http._tcp.local.",

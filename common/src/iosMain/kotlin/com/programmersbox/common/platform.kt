@@ -12,7 +12,6 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Application
 import com.programmersbox.database.PillWeightDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
@@ -21,6 +20,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
+import moe.tlaster.precompose.PreComposeApplication
+import moe.tlaster.precompose.viewmodel.viewModelScope
 import platform.Foundation.NSUUID
 import platform.UIKit.UIViewController
 
@@ -39,7 +40,7 @@ public fun MainViewController(
     actionOnDiscover: ((List<IpInfo>) -> Unit) -> Unit = {}
 ): UIViewController {
     discoverAction = actionOnDiscover
-    return Application("PillCounter") {
+    return PreComposeApplication("PillCounter") {
         MaterialTheme(
             colorScheme = if (isSystemInDarkTheme()) darkColorScheme() else lightColorScheme()
         ) {
@@ -130,7 +131,7 @@ internal actual class Database actual constructor(scope: CoroutineScope) {
 
 internal actual fun DiscoveryViewModel.discover() {
     isSearching = true
-    scope.launch {
+    viewModelScope.launch {
         async {
             discoverAction { list ->
                 discoveredList.addAll(list.map { PillCounterIp(it.host, it.name) }.distinct())

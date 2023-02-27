@@ -12,19 +12,19 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.CoroutineScope
+import moe.tlaster.precompose.ui.viewModel
+import moe.tlaster.precompose.viewmodel.ViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun DiscoveryScreen(viewModel: PillViewModel) {
-    val scope = rememberCoroutineScope()
-    val vm = remember { DiscoveryViewModel(scope, viewModel) }
+    val navigator = LocalNavigator.current
+    val vm = viewModel { DiscoveryViewModel(viewModel) }
     var ip by remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) { vm.startDiscovery() }
@@ -33,11 +33,7 @@ internal fun DiscoveryScreen(viewModel: PillViewModel) {
         topBar = {
             TopAppBar(
                 title = { Text("Discovery") },
-                navigationIcon = {
-                    IconButton(onClick = { viewModel.showMainScreen() }) {
-                        Icon(Icons.Default.ArrowBack, null)
-                    }
-                }
+                navigationIcon = { BackButton() }
             )
         },
         bottomBar = {
@@ -46,7 +42,7 @@ internal fun DiscoveryScreen(viewModel: PillViewModel) {
             ) {
                 if (hasBLEDiscovery) {
                     OutlinedButton(
-                        onClick = viewModel::showBLEDiscovery,
+                        onClick = { navigator.navigateToBLEDiscovery() },
                         modifier = Modifier.fillMaxWidth(),
                     ) { Text("Need to Connect PillCounter to WiFi?") }
                 }
@@ -129,9 +125,8 @@ internal fun DiscoveryScreen(viewModel: PillViewModel) {
 }
 
 internal class DiscoveryViewModel(
-    val scope: CoroutineScope,
     private val viewModel: PillViewModel
-) {
+) : ViewModel() {
     var isSearching by mutableStateOf(false)
     val discoveredList = mutableStateListOf<PillCounterIp>()
     val filteredDiscoveredList by derivedStateOf { discoveredList.distinct() }

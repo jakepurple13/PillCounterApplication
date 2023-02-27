@@ -23,7 +23,11 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.*
+import androidx.compose.ui.window.FrameWindowScope
+import androidx.compose.ui.window.WindowPlacement
+import androidx.compose.ui.window.WindowState
+import androidx.compose.ui.window.rememberWindowState
+import moe.tlaster.precompose.PreComposeWindow
 import org.jetbrains.skiko.OS
 import org.jetbrains.skiko.hostOs
 
@@ -39,7 +43,7 @@ fun WindowWithBar(
     content: @Composable () -> Unit
 ) {
     val state = rememberWindowState()
-    Window(
+    PreComposeWindow(
         state = state,
         undecorated = true,
         transparent = true,

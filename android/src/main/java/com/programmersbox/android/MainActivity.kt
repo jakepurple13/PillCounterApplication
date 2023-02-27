@@ -3,9 +3,6 @@ package com.programmersbox.android
 import android.app.Activity
 import android.os.Build
 import android.os.Bundle
-import androidx.activity.compose.BackHandler
-import androidx.activity.compose.setContent
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -14,16 +11,17 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
-import com.programmersbox.common.PillState
 import com.programmersbox.common.UIShow
+import moe.tlaster.precompose.lifecycle.PreComposeActivity
+import moe.tlaster.precompose.lifecycle.setContent
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : PreComposeActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             CustomMaterialTheme {
                 UIShow {
-                    BackHandler(it.pillState != PillState.MainScreen) { it.showMainScreen() }
+                    //BackHandler(it.pillState != PillState.MainScreen) { it.showMainScreen() }
                 }
             }
         }
