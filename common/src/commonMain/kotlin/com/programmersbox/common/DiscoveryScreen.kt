@@ -17,6 +17,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import moe.tlaster.precompose.navigation.Navigator
 import moe.tlaster.precompose.ui.viewModel
 import moe.tlaster.precompose.viewmodel.ViewModel
 
@@ -24,7 +25,7 @@ import moe.tlaster.precompose.viewmodel.ViewModel
 @Composable
 internal fun DiscoveryScreen(viewModel: PillViewModel) {
     val navigator = LocalNavigator.current
-    val vm = viewModel { DiscoveryViewModel(viewModel) }
+    val vm = viewModel(DiscoveryViewModel::class) { DiscoveryViewModel(navigator, viewModel) }
     var ip by remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) { vm.startDiscovery() }
@@ -125,6 +126,7 @@ internal fun DiscoveryScreen(viewModel: PillViewModel) {
 }
 
 internal class DiscoveryViewModel(
+    private val navigator: Navigator,
     private val viewModel: PillViewModel
 ) : ViewModel() {
     var isSearching by mutableStateOf(false)
@@ -140,7 +142,7 @@ internal class DiscoveryViewModel(
 
     fun connect(url: String) {
         viewModel.changeNetwork(url)
-        viewModel.showMainScreen()
+        navigator.goBack()
     }
 
 }

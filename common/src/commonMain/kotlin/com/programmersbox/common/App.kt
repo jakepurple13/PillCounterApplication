@@ -67,7 +67,7 @@ internal fun App(
                     destroyTransition = slideOutHorizontally { width -> -width } + fadeOut()
                 )
             ) {
-                val newPillVm = viewModel { NewPillViewModel(vm) }
+                val newPillVm = viewModel(NewPillViewModel::class) { NewPillViewModel(vm) }
                 DrawerInfo(
                     vm = vm,
                     drawerClick = newPillVm::recalibrate,

@@ -152,7 +152,7 @@ internal actual val hasBLEDiscovery: Boolean = true
 @Composable
 internal actual fun BluetoothDiscovery(viewModel: PillViewModel) {
     val navigator = LocalNavigator.current
-    val vm = viewModel { BluetoothViewModel(navigator, viewModel) }
+    val vm = viewModel(BluetoothViewModel::class) { BluetoothViewModel(navigator, viewModel) }
     BluetoothDiscoveryScreen(
         state = vm.state,
         isConnecting = vm.connecting,
