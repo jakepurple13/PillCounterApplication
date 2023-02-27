@@ -219,9 +219,14 @@ internal fun DrawerInfo(
                             ) { Icon(Icons.Default.MenuOpen, null) }
                         },
                         actions = {
+                            Icon(
+                                if (vm.connectionError) Icons.Default.LinkOff else Icons.Default.Link,
+                                null,
+                                tint = (if (vm.connectionError) MaterialTheme.colorScheme.error else Emerald).animate().value
+                            )
                             IconButton(
                                 onClick = { vm.showDiscovery() }
-                            ) { Icon(Icons.Default.Refresh, null) }
+                            ) { Icon(Icons.Default.Wifi, null) }
                         },
                         colors = TopAppBarDefaults.smallTopAppBarColors(
                             containerColor = topColor.value
