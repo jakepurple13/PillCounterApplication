@@ -71,6 +71,7 @@ public class PillViewModel(
         network!!.socketConnection()
             .catch {
                 it.printStackTrace()
+                connectionError = true
                 emit(Result.failure(it))
             }
             .onEach { result ->
@@ -83,7 +84,10 @@ public class PillViewModel(
                             db.updateCurrentCountInfo(pill)
                         }
                     }
-                    .onFailure { connectionError = true }
+                    .onFailure {
+                        it.printStackTrace()
+                        connectionError = true
+                    }
             }
             .launchIn(viewModelScope)
     }
@@ -92,7 +96,7 @@ public class PillViewModel(
         sendNewConfig(pillWeights)
     }
 
-    internal fun sendNewConfig(pillWeights: PillWeights) {
+    private fun sendNewConfig(pillWeights: PillWeights) {
         viewModelScope.launch {
             network?.updateConfig(pillWeights)
                 ?.onSuccess { println(it) }

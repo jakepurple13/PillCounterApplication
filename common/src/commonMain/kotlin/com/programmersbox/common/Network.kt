@@ -9,11 +9,11 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.*
 import io.ktor.serialization.kotlinx.json.*
-import io.ktor.websocket.*
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withTimeout
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
 internal class Network(
@@ -33,7 +33,10 @@ internal class Network(
 
     private val websocketClient = HttpClient {
         install(ContentNegotiation) { json(json) }
-        install(WebSockets) { contentConverter = KotlinxWebsocketSerializationConverter(json) }
+        install(WebSockets) {
+            contentConverter = KotlinxWebsocketSerializationConverter(json)
+            pingInterval = 10_000
+        }
     }
 
     private suspend inline fun <reified T> getApi(
@@ -60,31 +63,11 @@ internal class Network(
     }
 
     fun socketConnection(): Flow<Result<PillCount>> = flow {
-        websocketClient.ws(
-            method = HttpMethod.Get,
-            host = url.host,
-            port = url.port,
-            path = "/ws"
-        ) {
-            try {
-                incoming
-                    .consumeAsFlow()
-                    .catch { this@flow.emit(Result.failure(it)) }
-                    .filterIsInstance<Frame.Text>()
-                    .map { it.readText() }
-                    .mapNotNull { text ->
-                        try {
-                            json.decodeFromString<PillCount>(text)
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            null
-                        }
-                    }
-                    .onEach { emit(Result.success(it)) }
-                    .collect()
-            } catch (e: Exception) {
-                emit(Result.failure(e))
-            }
+        while (client.isActive) {
+            runCatching { getApi<PillCount>("$url/currentCount") }
+                .onSuccess { it?.let { p -> emit(Result.success(p)) } }
+                .onFailure { emit(Result.failure(it)) }
+            delay(1000)
         }
     }
 

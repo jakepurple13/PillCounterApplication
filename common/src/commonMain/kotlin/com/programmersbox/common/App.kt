@@ -1,6 +1,7 @@
 package com.programmersbox.common
 
 import androidx.compose.animation.*
+import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
@@ -18,6 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import moe.tlaster.precompose.navigation.NavHost
 import moe.tlaster.precompose.navigation.Navigator
@@ -197,6 +199,18 @@ internal fun DrawerInfo(
         Scaffold(
             topBar = {
                 Column {
+                    val error = MaterialTheme.colorScheme.errorContainer
+                    val surface = MaterialTheme.colorScheme.surface
+                    val topColor = remember { Animatable(surface) }
+                    LaunchedEffect(vm.connectionError) {
+                        if (vm.connectionError) {
+                            topColor.animateTo(error)
+                        } else {
+                            topColor.animateTo(Emerald)
+                            delay(2500)
+                            topColor.animateTo(surface)
+                        }
+                    }
                     TopAppBar(
                         title = { Text("Pill Counter") },
                         navigationIcon = {
@@ -208,10 +222,25 @@ internal fun DrawerInfo(
                             IconButton(
                                 onClick = { vm.showDiscovery() }
                             ) { Icon(Icons.Default.Refresh, null) }
-                        }
+                        },
+                        colors = TopAppBarDefaults.smallTopAppBarColors(
+                            containerColor = topColor.value
+                        )
                     )
                     BannerBox(
-                        showBanner = vm.connectionError
+                        showBanner = vm.connectionError,
+                        bannerEnter = expandVertically(
+                            animationSpec = tween(
+                                durationMillis = 150,
+                                easing = LinearOutSlowInEasing
+                            )
+                        ) { -it / 2 },
+                        bannerExit = shrinkVertically(
+                            animationSpec = tween(
+                                durationMillis = 150,
+                                easing = LinearOutSlowInEasing
+                            )
+                        ) { -it / 2 }
                     ) {
                         Surface(
                             modifier = Modifier
@@ -228,7 +257,8 @@ internal fun DrawerInfo(
                         ) {
                             Column(
                                 horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.SpaceEvenly
+                                verticalArrangement = Arrangement.spacedBy(4.dp),
+                                modifier = Modifier.padding(bottom = 4.dp)
                             ) {
                                 Text("Something went wrong with the connection")
                                 Row(

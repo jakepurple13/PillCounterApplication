@@ -11,6 +11,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import moe.tlaster.precompose.navigation.NavOptions
 import moe.tlaster.precompose.navigation.Navigator
 
@@ -47,6 +48,11 @@ internal fun BackButton() {
     val navigator = LocalNavigator.current
     IconButton(onClick = navigator::goBack) { Icon(Icons.Default.ArrowBack, null) }
 }
+
+@Composable
+internal fun Color.animate() = animateColorAsState(this)
+
+internal val Emerald = Color(0xFF2ecc71)
 
 internal fun Navigator.navigate(state: PillState, options: NavOptions? = null) = navigate(state.route, options)
 
