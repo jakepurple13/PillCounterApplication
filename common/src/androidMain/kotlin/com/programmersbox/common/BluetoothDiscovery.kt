@@ -50,7 +50,21 @@ internal fun BluetoothDiscoveryScreen(viewModel: PillViewModel) {
         when (target) {
             BluetoothState.Searching -> BluetoothSearching(vm)
             BluetoothState.Wifi -> WifiConnect(vm)
-            BluetoothState.Checking -> TODO()
+            BluetoothState.Checking -> {
+                Surface {
+                    Box(
+                        Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            CircularProgressIndicator()
+                            Text("Please Wait...")
+                        }
+                    }
+                }
+            }
         }
     }
 }
@@ -111,16 +125,35 @@ private fun WifiConnect(vm: BluetoothViewModel) {
         topBar = {
             TopAppBar(
                 title = { Text("Connect PillCounter to Wifi") },
-                navigationIcon = { BackButton() }
+                actions = {
+                    AnimatedVisibility(
+                        vm.networkItem != null
+                    ) {
+                        IconButton(
+                            onClick = { vm.networkClick(null) }
+                        ) { Icon(Icons.Default.Close, null) }
+                    }
+                }
             )
         },
         bottomBar = {
-            BottomAppBar {
-                Button(
-                    onClick = { vm.connectToWifi(password) },
-                    modifier = Modifier.fillMaxWidth(),
-                ) { Text("Connect") }
-            }
+            BottomAppBar(
+                floatingActionButton = {
+                    ExtendedFloatingActionButton(
+                        icon = { Icon(Icons.Default.Send, null) },
+                        text = { Text("Connect") },
+                        onClick = { vm.connectToWifi(password) }
+                    )
+                },
+                actions = {
+                    Button(
+                        onClick = { vm.getNetworks() },
+                    ) {
+                        Icon(Icons.Default.Refresh, null)
+                        Text("Refresh Networks")
+                    }
+                }
+            )
         }
     ) { padding ->
         Crossfade(vm.networkItem) { target ->
@@ -133,11 +166,7 @@ private fun WifiConnect(vm: BluetoothViewModel) {
                             modifier = Modifier.fillMaxWidth(),
                             readOnly = true,
                             label = { Text("SSID") },
-                            leadingIcon = {
-                                IconButton(
-                                    onClick = { vm.networkClick(null) }
-                                ) { Icon(Icons.Default.Close, null) }
-                            }
+                            leadingIcon = { Icon(Icons.Default.Wifi, null) },
                         )
                         OutlinedTextField(
                             value = password,
@@ -146,6 +175,7 @@ private fun WifiConnect(vm: BluetoothViewModel) {
                             visualTransformation = if (hidePassword) PasswordVisualTransformation() else VisualTransformation.None,
                             modifier = Modifier.fillMaxWidth(),
                             label = { Text("Password") },
+                            leadingIcon = { Icon(Icons.Default.WifiPassword, null) },
                             trailingIcon = {
                                 IconToggleButton(
                                     hidePassword,
@@ -289,8 +319,6 @@ internal class BluetoothViewModel(private val viewModel: PillViewModel) : ViewMo
                     val value = it.removeSuffix("\n")
                     val command = json.decodeFromString<SingleCommand>(value)
                     println(command)
-                    //TODO: Need to show loading screen as connecting to wifi
-                    // and need to show if it was a success
                     when (command.c) {
                         0 -> {
                             wifiNetworks.clear()
@@ -317,7 +345,7 @@ internal class BluetoothViewModel(private val viewModel: PillViewModel) : ViewMo
                 ?.launchIn(scannerScope)
 
             sendScan()
-            getNetworksK()
+            getNetworks()
         }
     }
 
@@ -334,7 +362,7 @@ internal class BluetoothViewModel(private val viewModel: PillViewModel) : ViewMo
         }
     }
 
-    private fun getNetworksK() {
+    fun getNetworks() {
         scannerScope.launch {
             peripheral?.write(
                 characteristicOf(
@@ -377,19 +405,25 @@ internal class BluetoothViewModel(private val viewModel: PillViewModel) : ViewMo
                                 WriteType.WithResponse
                             )
                         }
+                    state = BluetoothState.Checking
+                    delay(5000)
                     p.disconnect()
+                    viewModel.reconnect()
                     viewModel.showMainScreen()
                 }
             }
         }
     }
 
+    override fun onCleared() {
+        super.onCleared()
+        disconnect()
+    }
+
     companion object {
         const val SERVICE_WIRELESS_SERVICE = "e081fec0-f757-4449-b9c9-bfa83133f7fc"
         const val CHARACTERISTIC_WIRELESS_COMMANDER = "e081fec1-f757-4449-b9c9-bfa83133f7fc"
         const val CHARACTERISTIC_WIRELESS_COMMANDER_RESPONSE = "e081fec2-f757-4449-b9c9-bfa83133f7fc"
-
-        //TODO: Use this for connection status
         const val CHARACTERISTIC_WIRELESS_CONNECTION_STATUS = "e081fec3-f757-4449-b9c9-bfa83133f7fc"
 
         private const val GET_NETWORKS = "{\"c\":0}\n"

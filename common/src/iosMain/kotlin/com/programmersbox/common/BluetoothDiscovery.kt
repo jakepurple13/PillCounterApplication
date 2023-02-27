@@ -20,18 +20,23 @@ import com.splendo.kaluga.permissions.base.Permissions
 import com.splendo.kaluga.permissions.base.PermissionsBuilder
 import com.splendo.kaluga.permissions.bluetooth.registerBluetoothPermission
 import com.splendo.kaluga.permissions.location.registerLocationPermission
-import kotlinx.coroutines.*
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import moe.tlaster.precompose.ui.viewModel
+import moe.tlaster.precompose.viewmodel.ViewModel
+import moe.tlaster.precompose.viewmodel.viewModelScope
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 internal fun BluetoothDiscoveryScreen(viewModel: PillViewModel) {
-    val vm = remember { BluetoothViewModel(viewModel) }
+    val vm = viewModel { BluetoothViewModel(viewModel) }
     AnimatedContent(
         vm.state,
         transitionSpec = {
@@ -47,7 +52,21 @@ internal fun BluetoothDiscoveryScreen(viewModel: PillViewModel) {
         when (target) {
             BluetoothState.Searching -> BluetoothSearching(vm)
             BluetoothState.Wifi -> WifiConnect(vm)
-            BluetoothState.Checking -> TODO()
+            BluetoothState.Checking -> {
+                Surface {
+                    Box(
+                        Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            CircularProgressIndicator()
+                            Text("Please Wait...")
+                        }
+                    }
+                }
+            }
         }
     }
 }
@@ -58,7 +77,8 @@ private fun BluetoothSearching(vm: BluetoothViewModel) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Find PillCounter") }
+                title = { Text("Find PillCounter") },
+                navigationIcon = { BackButton() }
             )
         },
         bottomBar = {
@@ -106,16 +126,36 @@ private fun WifiConnect(vm: BluetoothViewModel) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Connect PillCounter to Wifi") }
+                title = { Text("Connect PillCounter to Wifi") },
+                actions = {
+                    AnimatedVisibility(
+                        vm.networkItem != null
+                    ) {
+                        IconButton(
+                            onClick = { vm.networkClick(null) }
+                        ) { Icon(Icons.Default.Close, null) }
+                    }
+                }
             )
         },
         bottomBar = {
-            BottomAppBar {
-                Button(
-                    onClick = { vm.connectToWifi(password) },
-                    modifier = Modifier.fillMaxWidth(),
-                ) { Text("Connect") }
-            }
+            BottomAppBar(
+                floatingActionButton = {
+                    ExtendedFloatingActionButton(
+                        icon = { Icon(Icons.Default.Send, null) },
+                        text = { Text("Connect") },
+                        onClick = { vm.connectToWifi(password) }
+                    )
+                },
+                actions = {
+                    Button(
+                        onClick = { vm.getNetworks() },
+                    ) {
+                        Icon(Icons.Default.Refresh, null)
+                        Text("Refresh Networks")
+                    }
+                }
+            )
         }
     ) { padding ->
         Crossfade(vm.networkItem) { target ->
@@ -128,19 +168,16 @@ private fun WifiConnect(vm: BluetoothViewModel) {
                             modifier = Modifier.fillMaxWidth(),
                             readOnly = true,
                             label = { Text("SSID") },
-                            leadingIcon = {
-                                IconButton(
-                                    onClick = { vm.networkClick(null) }
-                                ) { Icon(Icons.Default.Close, null) }
-                            }
+                            leadingIcon = { Icon(Icons.Default.Wifi, null) },
                         )
                         OutlinedTextField(
                             value = password,
                             onValueChange = { password = it },
+                            singleLine = true,
                             visualTransformation = if (hidePassword) PasswordVisualTransformation() else VisualTransformation.None,
                             modifier = Modifier.fillMaxWidth(),
-                            singleLine = true,
                             label = { Text("Password") },
+                            leadingIcon = { Icon(Icons.Default.WifiPassword, null) },
                             trailingIcon = {
                                 IconToggleButton(
                                     hidePassword,
@@ -186,9 +223,7 @@ internal enum class BluetoothState {
     Searching, Wifi, Checking
 }
 
-internal class BluetoothViewModel(private val viewModel: PillViewModel) {
-
-    private val scannerScope = CoroutineScope(Dispatchers.Main + Job())
+internal class BluetoothViewModel(private val viewModel: PillViewModel) : ViewModel() {
 
     private val scanner by lazy {
         Scanner {
@@ -239,15 +274,15 @@ internal class BluetoothViewModel(private val viewModel: PillViewModel) {
                 if (advertisementList.none { it.identifier.UUIDString == a.identifier.UUIDString })
                     advertisementList.add(a)
             }
-            .launchIn(scannerScope)
+            .launchIn(viewModelScope)
     }
 
     fun disconnect() {
-        scannerScope.cancel()
+        viewModelScope.cancel()
     }
 
     fun connect() {
-        scannerScope.launch {
+        viewModelScope.launch {
             connecting = true
             try {
                 peripheral?.connect()
@@ -275,7 +310,7 @@ internal class BluetoothViewModel(private val viewModel: PillViewModel) {
                     networkString += it.decodeToString()
                     refresh = 10 in it
                 }
-                ?.launchIn(scannerScope)
+                ?.launchIn(viewModelScope)
 
             snapshotFlow { networkString }
                 .onEach { println(it) }
@@ -305,19 +340,19 @@ internal class BluetoothViewModel(private val viewModel: PillViewModel) {
                         }
                     }
                 }
-                .launchIn(scannerScope)
+                .launchIn(viewModelScope)
 
             peripheral?.state
                 ?.onEach { println(it) }
-                ?.launchIn(scannerScope)
+                ?.launchIn(viewModelScope)
 
             sendScan()
-            getNetworksK()
+            getNetworks()
         }
     }
 
     private fun sendScan() {
-        scannerScope.launch {
+        viewModelScope.launch {
             peripheral?.write(
                 characteristicOf(
                     SERVICE_WIRELESS_SERVICE,
@@ -329,8 +364,8 @@ internal class BluetoothViewModel(private val viewModel: PillViewModel) {
         }
     }
 
-    private fun getNetworksK() {
-        scannerScope.launch {
+    fun getNetworks() {
+        viewModelScope.launch {
             peripheral?.write(
                 characteristicOf(
                     SERVICE_WIRELESS_SERVICE,
@@ -344,7 +379,7 @@ internal class BluetoothViewModel(private val viewModel: PillViewModel) {
 
     fun click(advertisement: Advertisement) {
         this.advertisement = advertisement
-        peripheral = scannerScope.peripheral(advertisement)
+        peripheral = viewModelScope.peripheral(advertisement)
     }
 
     fun networkClick(networkList: NetworkList?) {
@@ -354,7 +389,7 @@ internal class BluetoothViewModel(private val viewModel: PillViewModel) {
     fun connectToWifi(password: String) {
         peripheral?.let { p ->
             networkItem?.e?.let { ssid ->
-                scannerScope.launch {
+                viewModelScope.launch {
                     (Json.encodeToString(ConnectRequest(c = 1, p = WiFiInfo(e = ssid, p = password))) + "\n")
                         .also { println(it) }
                         .chunked(20) { it.toString().encodeToByteArray() }
@@ -372,11 +407,19 @@ internal class BluetoothViewModel(private val viewModel: PillViewModel) {
                                 WriteType.WithResponse
                             )
                         }
+                    state = BluetoothState.Checking
+                    delay(5000)
                     p.disconnect()
+                    viewModel.reconnect()
                     viewModel.showMainScreen()
                 }
             }
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        disconnect()
     }
 
     companion object {
