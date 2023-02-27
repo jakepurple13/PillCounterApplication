@@ -6,5 +6,9 @@
 	<true/>
 	<key>com.apple.developer.networking.multicast</key>
 	<true/>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>Privacy - Bluetooth Always Usage Description</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>Privacy - Bluetooth Peripheral Usage Description</string>
 </dict>
 </plist>

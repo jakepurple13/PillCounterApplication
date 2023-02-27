@@ -1,25 +1,23 @@
 package com.programmersbox.common
 
-import androidx.compose.runtime.*
-import com.juul.kable.*
-import com.juul.kable.logs.Logging
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import com.splendo.kaluga.bluetooth.BluetoothBuilder
-import com.splendo.kaluga.bluetooth.uuidFrom
+import com.splendo.kaluga.bluetooth.device.Device
+import com.splendo.kaluga.bluetooth.device.stringValue
 import com.splendo.kaluga.permissions.base.Permissions
 import com.splendo.kaluga.permissions.base.PermissionsBuilder
 import com.splendo.kaluga.permissions.bluetooth.registerBluetoothPermission
-import com.splendo.kaluga.permissions.location.registerLocationPermission
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import moe.tlaster.precompose.navigation.Navigator
 import moe.tlaster.precompose.viewmodel.ViewModel
 import moe.tlaster.precompose.viewmodel.viewModelScope
-
 
 internal class BluetoothViewModel(
     private val navigator: Navigator,
@@ -29,7 +27,7 @@ internal class BluetoothViewModel(
     private val scannerScope = CoroutineScope(Dispatchers.Main + Job())
 
     private val scanner by lazy {
-        Scanner {
+        /*Scanner {
             filters = listOf(Filter.Service(uuidFrom(SERVICE_WIRELESS_SERVICE)))
             logging {
                 level = Logging.Level.Events
@@ -37,7 +35,7 @@ internal class BluetoothViewModel(
                     bytes.joinToString { byte -> byte.toString() } // Show data as integer representation of bytes.
                 }
             }
-        }
+        }*/
     }
 
     private val b by lazy {
@@ -46,44 +44,61 @@ internal class BluetoothViewModel(
                 Permissions(
                     PermissionsBuilder().apply {
                         registerBluetoothPermission()
-                        registerLocationPermission()
                     }
                 )
             },
         ).create()
     }
 
-    val advertisementList = mutableStateListOf<Advertisement>()
+    val deviceList = mutableStateListOf<Device>()
     val wifiNetworks = mutableStateListOf<NetworkList>()
     var networkItem: NetworkList? by mutableStateOf(null)
     var state by mutableStateOf(BluetoothState.Searching)
 
-    var advertisement: Advertisement? by mutableStateOf(null)
+    var device: Device? by mutableStateOf(null)
     var connecting by mutableStateOf(false)
 
     private val json = Json {
         ignoreUnknownKeys = true
     }
 
-    private var peripheral: Peripheral? = null
-
     init {
-        b
+        b.startScanning(
+            //setOf(UUID(SERVICE_WIRELESS_SERVICE))
+        )
 
-        scanner.advertisements
+        b.isEnabled
+            .onEach { println("IsEnabled: $it") }
+            .launchIn(viewModelScope)
+
+        viewModelScope.launch {
+            b.isScanning()
+                .onEach { println("IsScanning: $it") }
+                .collect()
+        }
+
+        b.devices()
+            .onEach {
+                println(it.joinToString { it.identifier.stringValue })
+                deviceList.clear()
+                deviceList.addAll(it)
+            }
+            .launchIn(viewModelScope)
+
+        /*scanner.advertisements
             .filter { it.address == PI_MAC_ADDRESS }
             .onEach { a ->
                 if (advertisementList.none { it.address == a.address }) advertisementList.add(a)
             }
-            .launchIn(scannerScope)
+            .launchIn(scannerScope)*/
     }
 
-    private fun disconnect() {
+    fun disconnect() {
         scannerScope.cancel()
     }
 
     fun connect() {
-        scannerScope.launch {
+        /*scannerScope.launch {
             connecting = true
             try {
                 peripheral?.connect()
@@ -149,11 +164,11 @@ internal class BluetoothViewModel(
 
             sendScan()
             getNetworks()
-        }
+        }*/
     }
 
     private fun sendScan() {
-        scannerScope.launch {
+        /*scannerScope.launch {
             peripheral?.write(
                 characteristicOf(
                     SERVICE_WIRELESS_SERVICE,
@@ -162,11 +177,11 @@ internal class BluetoothViewModel(
                 SCAN.toByteArray(),
                 WriteType.WithResponse
             )
-        }
+        }*/
     }
 
     fun getNetworks() {
-        scannerScope.launch {
+        /*scannerScope.launch {
             peripheral?.write(
                 characteristicOf(
                     SERVICE_WIRELESS_SERVICE,
@@ -175,12 +190,12 @@ internal class BluetoothViewModel(
                 GET_NETWORKS.toByteArray(),
                 WriteType.WithResponse
             )
-        }
+        }*/
     }
 
-    fun click(advertisement: Advertisement) {
-        this.advertisement = advertisement
-        peripheral = scannerScope.peripheral(advertisement) { transport = Transport.Le }
+    fun click(device: Device) {
+        this.device = device
+        //peripheral = scannerScope.peripheral(advertisement) { transport = Transport.Le }
     }
 
     fun networkClick(networkList: NetworkList?) {
@@ -188,7 +203,7 @@ internal class BluetoothViewModel(
     }
 
     fun connectToWifi(password: String) {
-        peripheral?.let { p ->
+        /*peripheral?.let { p ->
             networkItem?.e?.let { ssid ->
                 viewModelScope.launch {
                     (Json.encodeToString(ConnectRequest(c = 1, p = WiFiInfo(e = ssid, p = password))) + "\n")
@@ -216,7 +231,7 @@ internal class BluetoothViewModel(
                     navigator.goBack()
                 }
             }
-        }
+        }*/
     }
 
     override fun onCleared() {

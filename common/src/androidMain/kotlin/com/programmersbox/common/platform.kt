@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
+import moe.tlaster.precompose.ui.viewModel
 import moe.tlaster.precompose.viewmodel.viewModelScope
 import java.net.InetAddress
 import javax.jmdns.JmDNS
@@ -140,5 +141,24 @@ internal actual val hasBLEDiscovery: Boolean = true
 
 @Composable
 internal actual fun BluetoothDiscovery(viewModel: PillViewModel) {
-    BluetoothDiscoveryScreen(viewModel)
+    val navigator = LocalNavigator.current
+    val vm = viewModel { BluetoothViewModel(navigator, viewModel) }
+    BluetoothDiscoveryScreen(
+        state = vm.state,
+        isConnecting = vm.connecting,
+        device = vm.advertisement,
+        deviceList = vm.advertisementList,
+        onDeviceClick = { it?.let { it1 -> vm.click(it1) } },
+        deviceIdentifier = { it?.address.orEmpty() },
+        deviceName = { it?.name ?: it?.peripheralName ?: "Device" },
+        isDeviceSelected = { found, selected -> found?.address == selected?.address },
+        networkItem = vm.networkItem,
+        onNetworkItemClick = { vm.networkClick(it) },
+        wifiNetworks = vm.wifiNetworks,
+        connectToWifi = vm::connectToWifi,
+        getNetworks = vm::getNetworks,
+        ssid = { it?.e.orEmpty() },
+        signalStrength = { it?.s ?: 0 },
+        connectOverBle = vm::connect
+    )
 }

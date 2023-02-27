@@ -49,6 +49,7 @@ internal fun BackButton() {
 }
 
 internal fun Navigator.navigate(state: PillState, options: NavOptions? = null) = navigate(state.route, options)
+
 internal fun Navigator.navigateToBLEDiscovery() = navigate(
     PillState.BluetoothDiscovery,
     NavOptions(

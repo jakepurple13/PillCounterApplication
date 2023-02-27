@@ -3,14 +3,17 @@ package com.programmersbox.common
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import com.programmersbox.database.PillWeightDatabase
+import com.splendo.kaluga.bluetooth.device.stringValue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
 import moe.tlaster.precompose.navigation.Navigator
+import moe.tlaster.precompose.ui.viewModel
 import moe.tlaster.precompose.viewmodel.viewModelScope
 import java.net.InetAddress
 import java.util.*
@@ -138,9 +141,28 @@ internal actual fun DiscoveryViewModel.discover() {
 
 internal actual fun randomUUID(): String = UUID.randomUUID().toString()
 
-internal actual val hasBLEDiscovery: Boolean = false
+internal actual val hasBLEDiscovery: Boolean = true
 
 @Composable
 internal actual fun BluetoothDiscovery(viewModel: PillViewModel) {
-
+    val navigator = LocalNavigator.current
+    val vm = viewModel { BluetoothViewModel(navigator, viewModel) }
+    BluetoothDiscoveryScreen(
+        state = vm.state,
+        isConnecting = vm.connecting,
+        device = vm.device,
+        deviceList = vm.deviceList,
+        onDeviceClick = { it?.let { it1 -> vm.click(it1) } },
+        deviceIdentifier = { it?.identifier?.stringValue.orEmpty() },
+        deviceName = { it?.info?.firstOrNull()?.name ?: "Device" },
+        isDeviceSelected = { found, selected -> found?.identifier == selected?.identifier },
+        networkItem = vm.networkItem,
+        onNetworkItemClick = { vm.networkClick(it) },
+        wifiNetworks = vm.wifiNetworks,
+        connectToWifi = vm::connectToWifi,
+        getNetworks = vm::getNetworks,
+        ssid = { it?.e.orEmpty() },
+        signalStrength = { it?.s ?: 0 },
+        connectOverBle = vm::connect
+    )
 }
