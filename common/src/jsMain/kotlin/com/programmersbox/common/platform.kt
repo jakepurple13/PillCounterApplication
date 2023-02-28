@@ -1,5 +1,6 @@
 package com.programmersbox.common
 
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.runtime.Composable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -37,4 +38,45 @@ internal actual val hasBLEDiscovery: Boolean = false
 @Composable
 public actual fun BluetoothDiscovery(viewModel: PillViewModel) {
 
+}
+
+@Composable
+public fun <T, R> BluetoothScreen(
+    state: BluetoothState,
+    isConnecting: Boolean,
+    connectOverBle: () -> Unit,
+    device: T?,
+    deviceList: List<T>,
+    onDeviceClick: (T?) -> Unit,
+    deviceIdentifier: (T?) -> String,
+    deviceName: suspend (T?) -> String,
+    isDeviceSelected: (found: T?, selected: T?) -> Boolean,
+    networkItem: R?,
+    onNetworkItemClick: (R?) -> Unit,
+    wifiNetworks: List<R>,
+    connectToWifi: (password: String) -> Unit,
+    getNetworks: () -> Unit,
+    ssid: (R?) -> String,
+    signalStrength: (R?) -> Int,
+    actions: @Composable RowScope.() -> Unit = {}
+) {
+    BluetoothDiscoveryScreen(
+        state,
+        isConnecting,
+        connectOverBle,
+        device,
+        deviceList,
+        onDeviceClick,
+        deviceIdentifier,
+        deviceName,
+        isDeviceSelected,
+        networkItem,
+        onNetworkItemClick,
+        wifiNetworks,
+        connectToWifi,
+        getNetworks,
+        ssid,
+        signalStrength,
+        actions
+    )
 }

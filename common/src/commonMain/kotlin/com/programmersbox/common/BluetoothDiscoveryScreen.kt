@@ -31,7 +31,8 @@ internal fun <T, R> BluetoothDiscoveryScreen(
     connectToWifi: (password: String) -> Unit,
     getNetworks: () -> Unit,
     ssid: (R?) -> String,
-    signalStrength: (R?) -> Int
+    signalStrength: (R?) -> Int,
+    actions: @Composable RowScope.() -> Unit = {}
 ) {
     AnimatedContent(
         state,
@@ -54,7 +55,8 @@ internal fun <T, R> BluetoothDiscoveryScreen(
                 onDeviceClick = onDeviceClick,
                 name = deviceName,
                 isSelected = isDeviceSelected,
-                identifier = deviceIdentifier
+                identifier = deviceIdentifier,
+                actions = actions
             )
 
             BluetoothState.Wifi -> WifiConnect(
@@ -96,13 +98,15 @@ private fun <T> BluetoothSearching(
     name: suspend (T?) -> String,
     isSelected: (found: T?, selected: T?) -> Boolean,
     isConnecting: Boolean,
-    connectOverBle: () -> Unit
+    connectOverBle: () -> Unit,
+    actions: @Composable RowScope.() -> Unit = {}
 ) {
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Find PillCounter") },
-                navigationIcon = { BackButton() }
+                navigationIcon = { BackButton() },
+                actions = actions
             )
         },
         bottomBar = {
@@ -253,6 +257,6 @@ private fun <R> WifiConnect(
     }
 }
 
-internal enum class BluetoothState {
+public enum class BluetoothState {
     Searching, Wifi, Checking
 }

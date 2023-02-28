@@ -14,16 +14,8 @@ kotlin {
     sourceSets {
         val jsMain by getting {
             dependencies {
-                //implementation(project(":common"))
-                implementation("com.juul.kable:core:0.21.0")
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
-                implementation(compose.runtime)
-                implementation(compose.ui)
-                implementation(compose.foundation)
-                implementation(compose.materialIconsExtended)
+                implementation(project(":common"))
                 implementation(compose.web.core)
-                @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
-                api(compose.material3)
             }
         }
     }

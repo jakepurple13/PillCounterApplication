@@ -2,7 +2,6 @@ package com.programmersbox.common
 
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
-import com.benasher44.uuid.uuidFrom
 import com.juul.kable.*
 import com.juul.kable.logs.Logging
 import io.ktor.utils.io.core.*
@@ -20,7 +19,7 @@ public class BluetoothViewModel {
 
     private val scanner by lazy {
         Scanner {
-            filters = listOf(Filter.Service(uuidFrom(SERVICE_WIRELESS_SERVICE)))
+            filters = null//listOf(Filter.Service(uuidFrom(SERVICE_WIRELESS_SERVICE)))
             logging {
                 level = Logging.Level.Events
                 data = Logging.DataProcessor { bytes ->
@@ -33,7 +32,7 @@ public class BluetoothViewModel {
     public val advertisementList: SnapshotStateList<Advertisement> = mutableStateListOf<Advertisement>()
     public val wifiNetworks: SnapshotStateList<NetworkList> = mutableStateListOf<NetworkList>()
     public var networkItem: NetworkList? by mutableStateOf(null)
-    internal var state: BluetoothState by mutableStateOf(BluetoothState.Searching)
+    public var state: BluetoothState by mutableStateOf(BluetoothState.Searching)
 
     public var advertisement: Advertisement? by mutableStateOf(null)
     public var connecting: Boolean by mutableStateOf(false)
@@ -44,7 +43,7 @@ public class BluetoothViewModel {
 
     private var peripheral: Peripheral? = null
 
-    init {
+    public fun startScan() {
         scanner.advertisements
             .onEach { a ->
                 if (advertisementList.none { it.peripheralName == a.peripheralName }) advertisementList.add(a)
