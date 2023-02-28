@@ -5,6 +5,7 @@ import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
@@ -13,6 +14,7 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
@@ -173,6 +175,11 @@ internal actual fun BluetoothDiscovery(viewModel: PillViewModel) {
             }.toTypedArray(),
             android.Manifest.permission.ACCESS_COARSE_LOCATION,
             android.Manifest.permission.ACCESS_FINE_LOCATION,
+            *if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                listOf(android.Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+            } else {
+                emptyList()
+            }.toTypedArray(),
         )
     ) {
         val vm = viewModel { BluetoothViewModel(navigator, viewModel) }
@@ -181,7 +188,7 @@ internal actual fun BluetoothDiscovery(viewModel: PillViewModel) {
             isConnecting = vm.connecting,
             device = vm.advertisement,
             deviceList = vm.advertisementList,
-            onDeviceClick = { it?.let { it1 -> vm.click(it1) } },
+            onDeviceClick = { it?.let(vm::click) },
             deviceIdentifier = { it?.address.orEmpty() },
             deviceName = { it?.name ?: it?.peripheralName ?: "Device" },
             isDeviceSelected = { found, selected -> found?.address == selected?.address },
@@ -190,13 +197,14 @@ internal actual fun BluetoothDiscovery(viewModel: PillViewModel) {
             wifiNetworks = vm.wifiNetworks,
             connectToWifi = vm::connectToWifi,
             getNetworks = vm::getNetworks,
-            ssid = { it?.e.orEmpty() },
+            ssid = { it?.e ?: "No SSID" },
             signalStrength = { it?.s ?: 0 },
             connectOverBle = vm::connect
         )
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @ExperimentalPermissionsApi
 @Composable
 internal fun PermissionRequest(permissionsList: List<String>, content: @Composable () -> Unit) {
@@ -206,54 +214,54 @@ internal fun PermissionRequest(permissionsList: List<String>, content: @Composab
     if (permissions.allPermissionsGranted) {
         content()
     } else {
-        if (permissions.shouldShowRationale) {
-            NeedsPermissions { permissions.launchMultiplePermissionRequest() }
-        } else {
-            NeedsPermissions {
-                context.startActivity(
-                    Intent().apply {
-                        action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
-                        data = Uri.fromParts("package", context.packageName, null)
-                    }
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text("PillCounter WiFi Setup") },
+                    navigationIcon = { BackButton() }
                 )
+            }
+        ) { padding ->
+            if (permissions.shouldShowRationale) {
+                NeedsPermissions(padding) { permissions.launchMultiplePermissionRequest() }
+            } else {
+                NeedsPermissions(padding) {
+                    context.startActivity(
+                        Intent().apply {
+                            action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+                            data = Uri.fromParts("package", context.packageName, null)
+                        }
+                    )
+                }
             }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun NeedsPermissions(onClick: () -> Unit) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("PillCounter WiFi Setup") },
-                navigationIcon = { BackButton() }
-            )
-        }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(top = 30.dp)
-                .padding(padding),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = "Please Enable Bluetooth/Nearby Devices and Location Permissions",
-                style = MaterialTheme.typography.titleLarge,
-            )
+internal fun NeedsPermissions(paddingValues: PaddingValues, onClick: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(top = 30.dp)
+            .padding(paddingValues),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = "Please Enable Bluetooth/Nearby Devices and Location Permissions",
+            style = MaterialTheme.typography.titleLarge,
+            textAlign = TextAlign.Center,
+        )
 
-            Text(
-                text = "They are needed to connect to a PillCounter device",
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(horizontal = 4.dp)
-            )
+        Text(
+            text = "They are needed to connect to a PillCounter device",
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.padding(horizontal = 4.dp)
+        )
 
-            Button(
-                onClick = onClick,
-                modifier = Modifier.padding(bottom = 4.dp)
-            ) { Text(text = "Enable") }
-        }
+        Button(
+            onClick = onClick,
+            modifier = Modifier.padding(bottom = 4.dp)
+        ) { Text(text = "Enable") }
     }
 }
