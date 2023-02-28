@@ -25,7 +25,7 @@ internal data class WifiList(
 )
 
 @Serializable
-internal data class NetworkList(
+public data class NetworkList(
     var e: String? = null,
     var m: String? = null,
     var s: Int? = null,

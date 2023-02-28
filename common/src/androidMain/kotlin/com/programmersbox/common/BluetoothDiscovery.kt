@@ -1,14 +1,9 @@
 package com.programmersbox.common
 
 import androidx.compose.runtime.*
+import com.benasher44.uuid.uuidFrom
 import com.juul.kable.*
 import com.juul.kable.logs.Logging
-import com.splendo.kaluga.bluetooth.BluetoothBuilder
-import com.splendo.kaluga.bluetooth.uuidFrom
-import com.splendo.kaluga.permissions.base.Permissions
-import com.splendo.kaluga.permissions.base.PermissionsBuilder
-import com.splendo.kaluga.permissions.bluetooth.registerBluetoothPermission
-import com.splendo.kaluga.permissions.location.registerLocationPermission
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
@@ -19,7 +14,6 @@ import kotlinx.serialization.json.Json
 import moe.tlaster.precompose.navigation.Navigator
 import moe.tlaster.precompose.viewmodel.ViewModel
 import moe.tlaster.precompose.viewmodel.viewModelScope
-
 
 internal class BluetoothViewModel(
     private val navigator: Navigator,
@@ -40,19 +34,6 @@ internal class BluetoothViewModel(
         }
     }
 
-    private val b by lazy {
-        BluetoothBuilder(
-            permissionsBuilder = {
-                Permissions(
-                    PermissionsBuilder().apply {
-                        registerBluetoothPermission()
-                        registerLocationPermission()
-                    }
-                )
-            },
-        ).create()
-    }
-
     val advertisementList = mutableStateListOf<Advertisement>()
     val wifiNetworks = mutableStateListOf<NetworkList>()
     var networkItem: NetworkList? by mutableStateOf(null)
@@ -68,10 +49,7 @@ internal class BluetoothViewModel(
     private var peripheral: Peripheral? = null
 
     init {
-        b
-
         scanner.advertisements
-            .filter { it.address == PI_MAC_ADDRESS }
             .onEach { a ->
                 if (advertisementList.none { it.address == a.address }) advertisementList.add(a)
             }

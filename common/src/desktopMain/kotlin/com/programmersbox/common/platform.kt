@@ -3,12 +3,10 @@ package com.programmersbox.common
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import com.programmersbox.database.PillWeightDatabase
-import com.splendo.kaluga.bluetooth.device.stringValue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
@@ -153,9 +151,9 @@ internal actual fun BluetoothDiscovery(viewModel: PillViewModel) {
         device = vm.device,
         deviceList = vm.deviceList,
         onDeviceClick = { it?.let { it1 -> vm.click(it1) } },
-        deviceIdentifier = { it?.identifier?.stringValue.orEmpty() },
-        deviceName = { it?.info?.firstOrNull()?.name ?: "Device" },
-        isDeviceSelected = { found, selected -> found?.identifier == selected?.identifier },
+        deviceIdentifier = { it ?: "" },
+        deviceName = { it ?: "Device" },
+        isDeviceSelected = { found, selected -> found == selected },
         networkItem = vm.networkItem,
         onNetworkItemClick = { vm.networkClick(it) },
         wifiNetworks = vm.wifiNetworks,

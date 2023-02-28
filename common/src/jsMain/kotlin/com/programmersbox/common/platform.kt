@@ -35,6 +35,6 @@ internal actual fun randomUUID(): String = ""
 internal actual val hasBLEDiscovery: Boolean = false
 
 @Composable
-internal actual fun BluetoothDiscovery(viewModel: PillViewModel) {
+public actual fun BluetoothDiscovery(viewModel: PillViewModel) {
 
 }

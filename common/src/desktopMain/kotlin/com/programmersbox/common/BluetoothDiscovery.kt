@@ -4,20 +4,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.splendo.kaluga.bluetooth.BluetoothBuilder
-import com.splendo.kaluga.bluetooth.device.Device
-import com.splendo.kaluga.bluetooth.device.stringValue
-import com.splendo.kaluga.permissions.base.Permissions
-import com.splendo.kaluga.permissions.base.PermissionsBuilder
-import com.splendo.kaluga.permissions.bluetooth.registerBluetoothPermission
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 import kotlinx.serialization.json.Json
 import moe.tlaster.precompose.navigation.Navigator
 import moe.tlaster.precompose.viewmodel.ViewModel
-import moe.tlaster.precompose.viewmodel.viewModelScope
 
 internal class BluetoothViewModel(
     private val navigator: Navigator,
@@ -38,24 +31,12 @@ internal class BluetoothViewModel(
         }*/
     }
 
-    private val b by lazy {
-        BluetoothBuilder(
-            permissionsBuilder = {
-                Permissions(
-                    PermissionsBuilder().apply {
-                        registerBluetoothPermission()
-                    }
-                )
-            },
-        ).create()
-    }
-
-    val deviceList = mutableStateListOf<Device>()
+    val deviceList = mutableStateListOf<String>()
     val wifiNetworks = mutableStateListOf<NetworkList>()
     var networkItem: NetworkList? by mutableStateOf(null)
     var state by mutableStateOf(BluetoothState.Searching)
 
-    var device: Device? by mutableStateOf(null)
+    var device: String? by mutableStateOf(null)
     var connecting by mutableStateOf(false)
 
     private val json = Json {
@@ -63,7 +44,9 @@ internal class BluetoothViewModel(
     }
 
     init {
-        b.startScanning(
+
+
+        /*b.startScanning(
             //setOf(UUID(SERVICE_WIRELESS_SERVICE))
         )
 
@@ -83,7 +66,7 @@ internal class BluetoothViewModel(
                 deviceList.clear()
                 deviceList.addAll(it)
             }
-            .launchIn(viewModelScope)
+            .launchIn(viewModelScope)*/
 
         /*scanner.advertisements
             .filter { it.address == PI_MAC_ADDRESS }
@@ -193,7 +176,7 @@ internal class BluetoothViewModel(
         }*/
     }
 
-    fun click(device: Device) {
+    fun click(device: String) {
         this.device = device
         //peripheral = scannerScope.peripheral(advertisement) { transport = Transport.Le }
     }

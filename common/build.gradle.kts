@@ -59,9 +59,6 @@ kotlin {
                 api("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
                 api("io.ktor:ktor-client-logging:$ktorVersion")
                 api("io.ktor:ktor-client-websockets:$ktorVersion")
-                api("com.splendo.kaluga:bluetooth:0.5.0")
-                api("com.splendo.kaluga:permissions:0.5.0")
-                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4!!")
                 api("moe.tlaster:precompose:1.3.14")
             }
         }
@@ -86,15 +83,14 @@ kotlin {
                 api("com.github.zqisheng.QsBle:ble_coroutines:1.2.3")
                 api("com.juul.kable:core:0.21.0")
                 api("com.google.accompanist:accompanist-permissions:0.29.1-alpha")
-                api("com.splendo.kaluga:base-permissions:0.5.0")
             }
         }
 
-        val androidTest by getting {
+        /*val androidTest by getting {
             dependencies {
                 implementation("junit:junit:4.13.2")
             }
-        }
+        }*/
 
         val desktopMain by getting {
             dependencies {
@@ -111,6 +107,7 @@ kotlin {
             dependencies {
                 api(compose.web.core)
                 api("io.ktor:ktor-client-js:$ktorVersion")
+                api("com.juul.kable:core:0.21.0")
             }
         }
 
@@ -121,7 +118,13 @@ kotlin {
             dependencies {
                 api("io.ktor:ktor-client-darwin:$ktorVersion")
                 api(projects.database)
+                /*
+                //TODO: We'll see what we can use when we have a real phone
+                api("com.splendo.kaluga:bluetooth:0.5.0")
+                api("com.splendo.kaluga:permissions:0.5.0")
+                 */
                 api("com.juul.kable:core:0.21.0")
+                api("dev.bluefalcon:blue-falcon:0.10.10")
             }
             iosX64Main.dependsOn(this)
             iosArm64Main.dependsOn(this)

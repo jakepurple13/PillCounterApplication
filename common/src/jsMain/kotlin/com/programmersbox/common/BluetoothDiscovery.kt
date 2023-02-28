@@ -1,67 +1,42 @@
 package com.programmersbox.common
 
 import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshots.SnapshotStateList
+import com.benasher44.uuid.uuidFrom
 import com.juul.kable.*
-import dev.bluefalcon.ApplicationContext
-import dev.bluefalcon.BlueFalcon
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.delay
+import com.juul.kable.logs.Logging
+import io.ktor.utils.io.core.*
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import moe.tlaster.precompose.navigation.Navigator
-import moe.tlaster.precompose.viewmodel.ViewModel
-import moe.tlaster.precompose.viewmodel.viewModelScope
 
-internal class BluetoothViewModel(
-    private val navigator: Navigator,
-    private val viewModel: PillViewModel
-) : ViewModel() {
+public class BluetoothViewModel {
 
-    private val f by lazy {
-        BlueFalcon(
-            ApplicationContext(),
-            SERVICE_WIRELESS_SERVICE
-        )
-    }
+    private val scannerScope = CoroutineScope(Dispatchers.Main + Job())
 
-    /*private val scanner by lazy {
+    private val scanner by lazy {
         Scanner {
             filters = listOf(Filter.Service(uuidFrom(SERVICE_WIRELESS_SERVICE)))
             logging {
                 level = Logging.Level.Events
                 data = Logging.DataProcessor { bytes ->
-                    // todo: Convert `bytes` to desired String representation, for example:
                     bytes.joinToString { byte -> byte.toString() } // Show data as integer representation of bytes.
                 }
             }
         }
-    }*/
+    }
 
-    /*private val b by lazy {
-        BluetoothBuilder(
-            permissionsBuilder = {
-                Permissions(
-                    PermissionsBuilder().apply {
-                        registerBluetoothPermission()
-                        registerLocationPermission()
-                    }
-                )
-            },
-        ).create()
-    }*/
+    public val advertisementList: SnapshotStateList<Advertisement> = mutableStateListOf<Advertisement>()
+    public val wifiNetworks: SnapshotStateList<NetworkList> = mutableStateListOf<NetworkList>()
+    public var networkItem: NetworkList? by mutableStateOf(null)
+    internal var state: BluetoothState by mutableStateOf(BluetoothState.Searching)
 
-    val advertisementList = mutableStateListOf<Advertisement>()
-    val wifiNetworks = mutableStateListOf<NetworkList>()
-    var networkItem: NetworkList? by mutableStateOf(null)
-    var state by mutableStateOf(BluetoothState.Searching)
-
-    var advertisement: Advertisement? by mutableStateOf(null)
-    var connecting by mutableStateOf(false)
+    public var advertisement: Advertisement? by mutableStateOf(null)
+    public var connecting: Boolean by mutableStateOf(false)
 
     private val json = Json {
         ignoreUnknownKeys = true
@@ -70,34 +45,19 @@ internal class BluetoothViewModel(
     private var peripheral: Peripheral? = null
 
     init {
-        //b
-
-        /*f.scan()
-        f.peripherals
-            .collect {
-                println("---")
-                it.forEach {
-                    println("---")
-                    println(it.name)
-                    println(it.uuid)
-                }
-            }*/
-
-        /*scanner.advertisements
-            .filter { it.identifier.UUIDString == PI_MAC_ADDRESS }
+        scanner.advertisements
             .onEach { a ->
-                if (advertisementList.none { it.identifier.UUIDString == a.identifier.UUIDString })
-                    advertisementList.add(a)
+                if (advertisementList.none { it.peripheralName == a.peripheralName }) advertisementList.add(a)
             }
-            .launchIn(viewModelScope)*/
+            .launchIn(scannerScope)
     }
 
-    fun disconnect() {
-        viewModelScope.cancel()
+    private fun disconnect() {
+        scannerScope.cancel()
     }
 
-    fun connect() {
-        viewModelScope.launch {
+    public fun connect() {
+        scannerScope.launch {
             connecting = true
             try {
                 peripheral?.connect()
@@ -125,7 +85,7 @@ internal class BluetoothViewModel(
                     networkString += it.decodeToString()
                     refresh = 10 in it
                 }
-                ?.launchIn(viewModelScope)
+                ?.launchIn(scannerScope)
 
             snapshotFlow { networkString }
                 .onEach { println(it) }
@@ -155,11 +115,11 @@ internal class BluetoothViewModel(
                         }
                     }
                 }
-                .launchIn(viewModelScope)
+                .launchIn(scannerScope)
 
             peripheral?.state
                 ?.onEach { println(it) }
-                ?.launchIn(viewModelScope)
+                ?.launchIn(scannerScope)
 
             sendScan()
             getNetworks()
@@ -167,47 +127,47 @@ internal class BluetoothViewModel(
     }
 
     private fun sendScan() {
-        viewModelScope.launch {
+        scannerScope.launch {
             peripheral?.write(
                 characteristicOf(
                     SERVICE_WIRELESS_SERVICE,
                     CHARACTERISTIC_WIRELESS_COMMANDER
                 ),
-                SCAN.encodeToByteArray(),
+                SCAN.toByteArray(),
                 WriteType.WithResponse
             )
         }
     }
 
-    fun getNetworks() {
-        viewModelScope.launch {
+    public fun getNetworks() {
+        scannerScope.launch {
             peripheral?.write(
                 characteristicOf(
                     SERVICE_WIRELESS_SERVICE,
                     CHARACTERISTIC_WIRELESS_COMMANDER
                 ),
-                GET_NETWORKS.encodeToByteArray(),
+                GET_NETWORKS.toByteArray(),
                 WriteType.WithResponse
             )
         }
     }
 
-    fun click(advertisement: Advertisement) {
+    public fun click(advertisement: Advertisement) {
         this.advertisement = advertisement
-        peripheral = viewModelScope.peripheral(advertisement)
+        peripheral = scannerScope.peripheral(advertisement)
     }
 
-    fun networkClick(networkList: NetworkList?) {
+    public fun networkClick(networkList: NetworkList?) {
         networkItem = networkList
     }
 
-    fun connectToWifi(password: String) {
+    public fun connectToWifi(password: String) {
         peripheral?.let { p ->
             networkItem?.e?.let { ssid ->
-                viewModelScope.launch {
+                scannerScope.launch {
                     (Json.encodeToString(ConnectRequest(c = 1, p = WiFiInfo(e = ssid, p = password))) + "\n")
                         .also { println(it) }
-                        .chunked(20) { it.toString().encodeToByteArray() }
+                        .chunked(20) { it.toString().toByteArray() }
                         .onEach {
                             println(it.contentToString())
                             println(it.decodeToString())
@@ -225,20 +185,15 @@ internal class BluetoothViewModel(
                     state = BluetoothState.Checking
                     delay(5000)
                     p.disconnect()
-                    viewModel.reconnect()
-                    navigator.goBack()
-                    navigator.goBack()
+                    //viewModel.reconnect()
+                    //navigator.goBack()
+                    //navigator.goBack()
                 }
             }
         }
     }
 
-    override fun onCleared() {
-        super.onCleared()
-        disconnect()
-    }
-
-    companion object {
+    private companion object {
         const val SERVICE_WIRELESS_SERVICE = "e081fec0-f757-4449-b9c9-bfa83133f7fc"
         const val CHARACTERISTIC_WIRELESS_COMMANDER = "e081fec1-f757-4449-b9c9-bfa83133f7fc"
         const val CHARACTERISTIC_WIRELESS_COMMANDER_RESPONSE = "e081fec2-f757-4449-b9c9-bfa83133f7fc"
