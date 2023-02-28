@@ -85,6 +85,8 @@ kotlin {
                 api("com.github.zqisheng.QsBle:ble:1.2.3")
                 api("com.github.zqisheng.QsBle:ble_coroutines:1.2.3")
                 api("com.juul.kable:core:0.21.0")
+                api("com.google.accompanist:accompanist-permissions:0.29.1-alpha")
+                api("com.splendo.kaluga:base-permissions:0.5.0")
             }
         }
 

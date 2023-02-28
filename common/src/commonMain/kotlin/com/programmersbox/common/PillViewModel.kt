@@ -22,21 +22,22 @@ public class PillViewModel(
 
     internal val pillWeightList = mutableStateListOf<PillCount>()
 
-    internal var connectionError by mutableStateOf(false)
-
     internal val pillAlreadySaved by derivedStateOf {
         pillWeightList.any { it.pillWeights.uuid == pillCount.pillWeights.uuid }
     }
 
-    internal var connectedState by mutableStateOf(true)
+    private var firstTime = true
+
+    internal var connectedState by mutableStateOf(ConnectionState.Idle)
+
+    internal val connectionError by derivedStateOf { connectedState == ConnectionState.Error }
 
     init {
-        snapshotFlow { connectionError }
-            .filter { !it }
+        snapshotFlow { connectedState }
+            .filter { connectedState == ConnectionState.Connected }
             .onEach {
-                connectedState = true
                 delay(2500)
-                connectedState = false
+                connectedState = ConnectionState.Idle
             }
             .launchIn(viewModelScope)
 
@@ -82,20 +83,23 @@ public class PillViewModel(
 
         network!!.socketConnection()
             .catch {
-                connectionError = true
+                connectedState = ConnectionState.Error
                 emit(Result.failure(it))
             }
             .onEach { result ->
                 isConnectionLoading = false
                 result
                     .onSuccess { pill ->
-                        connectionError = false
+                        if (connectedState != ConnectionState.Idle || firstTime) {
+                            firstTime = false
+                            connectedState = ConnectionState.Connected
+                        }
                         db.updateCurrentPill(pill)
                         if (pillWeightList.any { it.pillWeights.uuid == pill.pillWeights.uuid }) {
                             db.updateCurrentCountInfo(pill)
                         }
                     }
-                    .onFailure { connectionError = true }
+                    .onFailure { connectedState = ConnectionState.Error }
             }
             .launchIn(viewModelScope)
     }
@@ -145,3 +149,5 @@ public enum class PillState(internal val route: String = "") {
     Discovery("discovery"),
     BluetoothDiscovery("bluetooth")
 }
+
+internal enum class ConnectionState { Idle, Error, Connected }

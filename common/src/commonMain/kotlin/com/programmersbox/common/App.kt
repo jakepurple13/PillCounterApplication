@@ -223,7 +223,7 @@ internal fun DrawerInfo(
                     )
 
                     BannerBox(
-                        showBanner = vm.connectedState
+                        showBanner = vm.connectedState == ConnectionState.Connected
                     ) {
                         Surface(
                             modifier = Modifier
@@ -252,7 +252,7 @@ internal fun DrawerInfo(
                     }
 
                     BannerBox(
-                        showBanner = vm.connectionError
+                        showBanner = vm.connectedState == ConnectionState.Error
                     ) {
                         Surface(
                             modifier = Modifier
@@ -278,14 +278,14 @@ internal fun DrawerInfo(
                                     modifier = Modifier.padding(horizontal = 4.dp)
                                 ) {
                                     Button(
-                                        onClick = { vm.showDiscovery() },
+                                        onClick = vm::showDiscovery,
                                         modifier = Modifier.weight(1f),
                                         colors = ButtonDefaults.buttonColors(
                                             containerColor = MaterialTheme.colorScheme.error
                                         )
                                     ) { Text("Find Pill Counter") }
                                     Button(
-                                        onClick = { vm.reconnect() },
+                                        onClick = vm::reconnect,
                                         modifier = Modifier.weight(1f),
                                         colors = ButtonDefaults.buttonColors(
                                             containerColor = MaterialTheme.colorScheme.error

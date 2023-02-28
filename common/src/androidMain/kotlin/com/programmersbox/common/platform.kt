@@ -1,8 +1,22 @@
 package com.programmersbox.common
 
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.programmersbox.database.PillWeightDatabase
-import com.splendo.kaluga.bluetooth.UUID
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -13,10 +27,10 @@ import kotlinx.coroutines.launch
 import moe.tlaster.precompose.ui.viewModel
 import moe.tlaster.precompose.viewmodel.viewModelScope
 import java.net.InetAddress
+import java.util.*
 import javax.jmdns.JmDNS
 import javax.jmdns.ServiceEvent
 import javax.jmdns.ServiceListener
-
 
 public actual fun getPlatformName(): String {
     return "Android"
@@ -139,26 +153,107 @@ internal actual fun randomUUID(): String = UUID.randomUUID().toString()
 
 internal actual val hasBLEDiscovery: Boolean = true
 
+@OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
 @Composable
 internal actual fun BluetoothDiscovery(viewModel: PillViewModel) {
     val navigator = LocalNavigator.current
-    val vm = viewModel { BluetoothViewModel(navigator, viewModel) }
-    BluetoothDiscoveryScreen(
-        state = vm.state,
-        isConnecting = vm.connecting,
-        device = vm.advertisement,
-        deviceList = vm.advertisementList,
-        onDeviceClick = { it?.let { it1 -> vm.click(it1) } },
-        deviceIdentifier = { it?.address.orEmpty() },
-        deviceName = { it?.name ?: it?.peripheralName ?: "Device" },
-        isDeviceSelected = { found, selected -> found?.address == selected?.address },
-        networkItem = vm.networkItem,
-        onNetworkItemClick = { vm.networkClick(it) },
-        wifiNetworks = vm.wifiNetworks,
-        connectToWifi = vm::connectToWifi,
-        getNetworks = vm::getNetworks,
-        ssid = { it?.e.orEmpty() },
-        signalStrength = { it?.s ?: 0 },
-        connectOverBle = vm::connect
-    )
+
+    PermissionRequest(
+        listOf(
+            *if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                listOf(
+                    android.Manifest.permission.BLUETOOTH_SCAN,
+                    android.Manifest.permission.BLUETOOTH_CONNECT,
+                )
+            } else {
+                listOf(
+                    android.Manifest.permission.BLUETOOTH,
+                    android.Manifest.permission.BLUETOOTH_ADMIN,
+                )
+            }.toTypedArray(),
+            android.Manifest.permission.ACCESS_COARSE_LOCATION,
+            android.Manifest.permission.ACCESS_FINE_LOCATION,
+        )
+    ) {
+        val vm = viewModel { BluetoothViewModel(navigator, viewModel) }
+        BluetoothDiscoveryScreen(
+            state = vm.state,
+            isConnecting = vm.connecting,
+            device = vm.advertisement,
+            deviceList = vm.advertisementList,
+            onDeviceClick = { it?.let { it1 -> vm.click(it1) } },
+            deviceIdentifier = { it?.address.orEmpty() },
+            deviceName = { it?.name ?: it?.peripheralName ?: "Device" },
+            isDeviceSelected = { found, selected -> found?.address == selected?.address },
+            networkItem = vm.networkItem,
+            onNetworkItemClick = { vm.networkClick(it) },
+            wifiNetworks = vm.wifiNetworks,
+            connectToWifi = vm::connectToWifi,
+            getNetworks = vm::getNetworks,
+            ssid = { it?.e.orEmpty() },
+            signalStrength = { it?.s ?: 0 },
+            connectOverBle = vm::connect
+        )
+    }
+}
+
+@ExperimentalPermissionsApi
+@Composable
+internal fun PermissionRequest(permissionsList: List<String>, content: @Composable () -> Unit) {
+    val permissions = rememberMultiplePermissionsState(permissionsList)
+    val context = LocalContext.current
+    SideEffect { permissions.launchMultiplePermissionRequest() }
+    if (permissions.allPermissionsGranted) {
+        content()
+    } else {
+        if (permissions.shouldShowRationale) {
+            NeedsPermissions { permissions.launchMultiplePermissionRequest() }
+        } else {
+            NeedsPermissions {
+                context.startActivity(
+                    Intent().apply {
+                        action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+                        data = Uri.fromParts("package", context.packageName, null)
+                    }
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+internal fun NeedsPermissions(onClick: () -> Unit) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("PillCounter WiFi Setup") },
+                navigationIcon = { BackButton() }
+            )
+        }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = 30.dp)
+                .padding(padding),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Please Enable Bluetooth/Nearby Devices and Location Permissions",
+                style = MaterialTheme.typography.titleLarge,
+            )
+
+            Text(
+                text = "They are needed to connect to a PillCounter device",
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(horizontal = 4.dp)
+            )
+
+            Button(
+                onClick = onClick,
+                modifier = Modifier.padding(bottom = 4.dp)
+            ) { Text(text = "Enable") }
+        }
+    }
 }
