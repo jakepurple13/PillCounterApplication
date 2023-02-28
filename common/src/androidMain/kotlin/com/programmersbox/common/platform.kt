@@ -155,7 +155,7 @@ internal actual fun randomUUID(): String = UUID.randomUUID().toString()
 
 internal actual val hasBLEDiscovery: Boolean = true
 
-@OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 internal actual fun BluetoothDiscovery(viewModel: PillViewModel) {
     val navigator = LocalNavigator.current
@@ -173,12 +173,13 @@ internal actual fun BluetoothDiscovery(viewModel: PillViewModel) {
                     android.Manifest.permission.BLUETOOTH_ADMIN,
                 )
             }.toTypedArray(),
-            android.Manifest.permission.ACCESS_COARSE_LOCATION,
-            android.Manifest.permission.ACCESS_FINE_LOCATION,
             *if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 listOf(android.Manifest.permission.ACCESS_BACKGROUND_LOCATION)
             } else {
-                emptyList()
+                listOf(
+                    android.Manifest.permission.ACCESS_COARSE_LOCATION,
+                    android.Manifest.permission.ACCESS_FINE_LOCATION
+                )
             }.toTypedArray(),
         )
     ) {
