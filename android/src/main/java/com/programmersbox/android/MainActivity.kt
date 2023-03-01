@@ -40,7 +40,7 @@ class MainActivity : PreComposeActivity() {
                         retryConnection = stringResource(R.string.retryConnection),
                         somethingWentWrongWithTheConnection = stringResource(R.string.somethingWentWrongWithTheConnection),
                         connected = stringResource(R.string.connected),
-                        id = { stringResource(R.string.id_info) },
+                        id = { stringResource(R.string.id_info, it) },
                         pillName = stringResource(R.string.pillName),
                         save = stringResource(R.string.save),
                         pressToStartCalibration = stringResource(R.string.pressToStartCalibration),
