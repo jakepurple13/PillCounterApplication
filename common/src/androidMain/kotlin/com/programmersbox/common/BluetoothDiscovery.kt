@@ -24,7 +24,7 @@ internal class BluetoothViewModel(
 
     private val scanner by lazy {
         Scanner {
-            filters = listOf(Filter.Service(uuidFrom(SERVICE_WIRELESS_SERVICE)))
+            filters = listOf(Filter.Service(uuidFrom(BluetoothConstants.SERVICE_WIRELESS_SERVICE)))
             logging {
                 level = Logging.Level.Events
                 data = Logging.DataProcessor { bytes ->
@@ -78,8 +78,8 @@ internal class BluetoothViewModel(
 
             peripheral?.observe(
                 characteristicOf(
-                    SERVICE_WIRELESS_SERVICE,
-                    CHARACTERISTIC_WIRELESS_COMMANDER_RESPONSE
+                    BluetoothConstants.SERVICE_WIRELESS_SERVICE,
+                    BluetoothConstants.CHARACTERISTIC_WIRELESS_COMMANDER_RESPONSE
                 )
             )
                 ?.onEach {
@@ -134,10 +134,10 @@ internal class BluetoothViewModel(
         scannerScope.launch {
             peripheral?.write(
                 characteristicOf(
-                    SERVICE_WIRELESS_SERVICE,
-                    CHARACTERISTIC_WIRELESS_COMMANDER
+                    BluetoothConstants.SERVICE_WIRELESS_SERVICE,
+                    BluetoothConstants.CHARACTERISTIC_WIRELESS_COMMANDER
                 ),
-                SCAN.toByteArray(),
+                BluetoothConstants.SCAN.toByteArray(),
                 WriteType.WithResponse
             )
         }
@@ -147,10 +147,10 @@ internal class BluetoothViewModel(
         scannerScope.launch {
             peripheral?.write(
                 characteristicOf(
-                    SERVICE_WIRELESS_SERVICE,
-                    CHARACTERISTIC_WIRELESS_COMMANDER
+                    BluetoothConstants.SERVICE_WIRELESS_SERVICE,
+                    BluetoothConstants.CHARACTERISTIC_WIRELESS_COMMANDER
                 ),
-                GET_NETWORKS.toByteArray(),
+                BluetoothConstants.GET_NETWORKS.toByteArray(),
                 WriteType.WithResponse
             )
         }
@@ -179,8 +179,8 @@ internal class BluetoothViewModel(
                         .forEach {
                             p.write(
                                 characteristicOf(
-                                    SERVICE_WIRELESS_SERVICE,
-                                    CHARACTERISTIC_WIRELESS_COMMANDER
+                                    BluetoothConstants.SERVICE_WIRELESS_SERVICE,
+                                    BluetoothConstants.CHARACTERISTIC_WIRELESS_COMMANDER
                                 ),
                                 it,
                                 WriteType.WithResponse
@@ -200,16 +200,5 @@ internal class BluetoothViewModel(
     override fun onCleared() {
         super.onCleared()
         disconnect()
-    }
-
-    companion object {
-        const val SERVICE_WIRELESS_SERVICE = "e081fec0-f757-4449-b9c9-bfa83133f7fc"
-        const val CHARACTERISTIC_WIRELESS_COMMANDER = "e081fec1-f757-4449-b9c9-bfa83133f7fc"
-        const val CHARACTERISTIC_WIRELESS_COMMANDER_RESPONSE = "e081fec2-f757-4449-b9c9-bfa83133f7fc"
-        const val CHARACTERISTIC_WIRELESS_CONNECTION_STATUS = "e081fec3-f757-4449-b9c9-bfa83133f7fc"
-
-        private const val GET_NETWORKS = "{\"c\":0}\n"
-        private const val SCAN = "{\"c\":4}\n"
-        private const val PI_MAC_ADDRESS = "B8:27:EB:E2:8F:2F"
     }
 }

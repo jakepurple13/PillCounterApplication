@@ -28,12 +28,14 @@ internal val LocalNavigator = staticCompositionLocalOf<Navigator> { error("No Na
 
 @Composable
 internal fun App(
+    localization: Localization = Localization(),
     navigator: Navigator = rememberNavigator(),
     scope: CoroutineScope = rememberCoroutineScope(),
     vm: PillViewModel = remember { PillViewModel(navigator, scope) },
 ) {
     CompositionLocalProvider(
         LocalNavigator provides navigator,
+        LocalLocale provides localization
     ) {
         Surface {
             NavHost(
@@ -91,6 +93,7 @@ internal fun DrawerInfo(
     drawerClick: (PillWeights) -> Unit,
     content: @Composable () -> Unit
 ) {
+    val locale = LocalLocale.current
     val scope = rememberCoroutineScope()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     if (drawerState.isOpen) {
@@ -105,7 +108,7 @@ internal fun DrawerInfo(
                 Scaffold(
                     topBar = {
                         TopAppBar(
-                            title = { Text("Saved") },
+                            title = { Text(locale.saved) },
                             actions = {
                                 IconButton(
                                     onClick = { scope.launch { drawerState.close() } }
@@ -147,7 +150,7 @@ internal fun DrawerInfo(
                                                     Icon(Icons.Default.Close, null)
                                                 }
                                             },
-                                            headlineText = { Text("Are you sre you want to remove this?") },
+                                            headlineText = { Text(locale.areYouSureYouWantToRemoveThis) },
                                             supportingText = { Text(it.pillWeights.name) },
                                             trailingContent = {
                                                 IconButton(onClick = { vm.removeConfig(it.pillWeights) }) {
@@ -164,11 +167,11 @@ internal fun DrawerInfo(
                                             headlineText = { Text(it.pillWeights.name) },
                                             supportingText = {
                                                 Column {
-                                                    Text("Bottle Weight: ${it.pillWeights.bottleWeight}")
-                                                    Text("Pill Weight: ${it.pillWeights.pillWeight}")
+                                                    Text(locale.bottleWeight(it.pillWeights.bottleWeight))
+                                                    Text(locale.pillWeight(it.pillWeights.pillWeight))
                                                 }
                                             },
-                                            overlineText = { Text("ID: ${it.pillWeights.uuid}") },
+                                            overlineText = { Text(locale.id(it.pillWeights.uuid)) },
                                             leadingContent = { Text(it.formattedCount().toString()) },
                                             trailingContent = {
                                                 IconButton(onClick = { remove = true }) {
@@ -235,7 +238,7 @@ internal fun DrawerInfo(
                                 modifier = Modifier.padding(bottom = 4.dp)
                             ) {
                                 Text(
-                                    "Connected",
+                                    locale.connected,
                                     color = MaterialTheme.colorScheme.surface
                                 )
                             }
@@ -263,7 +266,7 @@ internal fun DrawerInfo(
                                 verticalArrangement = Arrangement.spacedBy(4.dp),
                                 modifier = Modifier.padding(bottom = 4.dp)
                             ) {
-                                Text("Something went wrong with the connection")
+                                Text(locale.somethingWentWrongWithTheConnection)
                                 Row(
                                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                                     modifier = Modifier.padding(horizontal = 4.dp)
@@ -274,7 +277,7 @@ internal fun DrawerInfo(
                                         colors = ButtonDefaults.buttonColors(
                                             containerColor = MaterialTheme.colorScheme.error
                                         )
-                                    ) { Text("Find Pill Counter") }
+                                    ) { Text(locale.findPillCounter) }
                                     Button(
                                         onClick = vm::reconnect,
                                         modifier = Modifier.weight(1f),
@@ -282,7 +285,7 @@ internal fun DrawerInfo(
                                             containerColor = MaterialTheme.colorScheme.error
                                         ),
                                         enabled = !vm.isConnectionLoading
-                                    ) { Text("Retry Connection") }
+                                    ) { Text(locale.retryConnection) }
                                 }
                                 if (vm.isConnectionLoading) CircularProgressIndicator()
                             }
@@ -295,13 +298,13 @@ internal fun DrawerInfo(
                     NavigationBarItem(
                         selected = homeSelected,
                         icon = { Icon(Icons.Default.Medication, null) },
-                        label = { Text("Home") },
+                        label = { Text(locale.home) },
                         onClick = { vm.showMainScreen() }
                     )
                     NavigationBarItem(
                         selected = newPillSelected,
                         icon = { Icon(Icons.Default.Add, null) },
-                        label = { Text("Add New Pill") },
+                        label = { Text(locale.addNewPill) },
                         onClick = { vm.showNewPill() }
                     )
                 }

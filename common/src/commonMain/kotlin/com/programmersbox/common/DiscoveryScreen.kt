@@ -1,20 +1,15 @@
 package com.programmersbox.common
 
-import androidx.compose.animation.*
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import moe.tlaster.precompose.navigation.Navigator
@@ -24,6 +19,7 @@ import moe.tlaster.precompose.viewmodel.ViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun DiscoveryScreen(viewModel: PillViewModel) {
+    val locale = LocalLocale.current
     val navigator = LocalNavigator.current
     val vm = viewModel(DiscoveryViewModel::class) { DiscoveryViewModel(navigator, viewModel) }
     var ip by remember { mutableStateOf("") }
@@ -33,7 +29,7 @@ internal fun DiscoveryScreen(viewModel: PillViewModel) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Discovery") },
+                title = { Text(locale.discovery) },
                 navigationIcon = { BackButton() }
             )
         },
@@ -45,12 +41,12 @@ internal fun DiscoveryScreen(viewModel: PillViewModel) {
                     OutlinedButton(
                         onClick = { navigator.navigateToBLEDiscovery() },
                         modifier = Modifier.fillMaxWidth(),
-                    ) { Text("Need to Connect PillCounter to WiFi?") }
+                    ) { Text(locale.needToConnectPillCounterToWifi) }
                 }
                 OutlinedTextField(
                     value = ip,
                     onValueChange = { ip = it },
-                    label = { Text("Enter ip address") },
+                    label = { Text(locale.enterIpAddress) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 4.dp)
@@ -76,11 +72,11 @@ internal fun DiscoveryScreen(viewModel: PillViewModel) {
                             modifier = Modifier
                                 .weight(1f)
                                 .padding(horizontal = 4.dp)
-                        ) { Text("Discover") }
+                        ) { Text(locale.discover) }
                     },
                     floatingActionButton = {
                         ExtendedFloatingActionButton(
-                            text = { Text("Manual IP") },
+                            text = { Text(locale.manualIP) },
                             icon = { Icon(Icons.Default.Add, null) },
                             onClick = { if (ip.isNotEmpty()) vm.connect(ip) }
                         )
@@ -89,35 +85,34 @@ internal fun DiscoveryScreen(viewModel: PillViewModel) {
             }
         }
     ) { padding ->
-        LazyColumn(
-            contentPadding = padding,
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            items(vm.filteredDiscoveredList) {
-                OutlinedCard(
-                    onClick = { vm.connect(it.ip) }
-                ) {
-                    ListItem(
-                        headlineText = { Text(it.name) },
-                        supportingText = { Text(it.ip) }
-                    )
-                }
+        PullToRefresh(
+            state = rememberPullToRefreshState(vm.isSearching),
+            onRefresh = vm::discover,
+            indicatorPadding = padding,
+            indicator = { state, refreshTrigger, refreshingOffset ->
+                PullToRefreshIndicator(
+                    state,
+                    refreshTrigger,
+                    refreshingOffset,
+                    releaseToRefresh = locale::releaseToRefresh,
+                    refreshing = locale::refreshing,
+                    pullToRefresh = locale::pullToRefresh
+                )
             }
-
-            item {
-                AnimatedVisibility(
-                    vm.isSearching,
-                    enter = expandVertically() + fadeIn(),
-                    exit = shrinkVertically() + fadeOut(),
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 4.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                contentPadding = padding,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                items(vm.filteredDiscoveredList) {
+                    OutlinedCard(
+                        onClick = { vm.connect(it.ip) }
                     ) {
-                        CircularProgressIndicator()
-                        Text("Searching")
+                        ListItem(
+                            headlineText = { Text(it.name) },
+                            supportingText = { Text(it.ip) }
+                        )
                     }
                 }
             }

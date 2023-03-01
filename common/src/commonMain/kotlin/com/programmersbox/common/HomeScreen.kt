@@ -11,6 +11,7 @@ import androidx.compose.ui.unit.dp
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun HomeScreen(viewModel: PillViewModel) {
+    val locale = LocalLocale.current
     Scaffold(
         bottomBar = {
             BottomAppBar {
@@ -20,14 +21,14 @@ internal fun HomeScreen(viewModel: PillViewModel) {
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 4.dp)
-                    ) { Text("Update Current Config") }
+                    ) { Text(locale.updateCurrentConfig) }
                 } else {
                     OutlinedButton(
                         onClick = { viewModel.saveNewConfig(viewModel.pillCount.pillWeights) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 4.dp)
-                    ) { Text("Save Current Config") }
+                    ) { Text(locale.saveCurrentConfig) }
                 }
             }
         }
@@ -41,19 +42,19 @@ internal fun HomeScreen(viewModel: PillViewModel) {
         ) {
             Text(viewModel.pillCount.pillWeights.name)
             Text(
-                "${viewModel.pillCount.formattedCount()} pills",
+                locale.pills(viewModel.pillCount.formattedCount()),
                 style = MaterialTheme.typography.titleLarge
             )
             Row(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    "Pill Weight: ${viewModel.pillCount.pillWeights.pillWeight}",
+                    locale.pillWeight(viewModel.pillCount.pillWeights.pillWeight),
                     textAlign = TextAlign.Center,
                     modifier = Modifier.weight(1f)
                 )
                 Text(
-                    "Bottle Weight: ${viewModel.pillCount.pillWeights.bottleWeight}",
+                    locale.bottleWeight(viewModel.pillCount.pillWeights.bottleWeight),
                     textAlign = TextAlign.Center,
                     modifier = Modifier.weight(1f)
                 )

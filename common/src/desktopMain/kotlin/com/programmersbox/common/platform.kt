@@ -28,7 +28,7 @@ public fun UIShow(
     navigator: Navigator,
     vm: PillViewModel,
 ) {
-    App(navigator, rememberCoroutineScope(), vm)
+    App(navigator = navigator, scope = rememberCoroutineScope(), vm = vm)
 }
 
 internal actual class Database actual constructor(scope: CoroutineScope) {

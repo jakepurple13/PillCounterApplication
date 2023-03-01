@@ -73,8 +73,8 @@ public class BluetoothViewModel {
 
             peripheral?.observe(
                 characteristicOf(
-                    SERVICE_WIRELESS_SERVICE,
-                    CHARACTERISTIC_WIRELESS_COMMANDER_RESPONSE
+                    BluetoothConstants.SERVICE_WIRELESS_SERVICE,
+                    BluetoothConstants.CHARACTERISTIC_WIRELESS_COMMANDER_RESPONSE
                 )
             )
                 ?.onEach {
@@ -129,10 +129,10 @@ public class BluetoothViewModel {
         scannerScope.launch {
             peripheral?.write(
                 characteristicOf(
-                    SERVICE_WIRELESS_SERVICE,
-                    CHARACTERISTIC_WIRELESS_COMMANDER
+                    BluetoothConstants.SERVICE_WIRELESS_SERVICE,
+                    BluetoothConstants.CHARACTERISTIC_WIRELESS_COMMANDER
                 ),
-                SCAN.toByteArray(),
+                BluetoothConstants.SCAN.toByteArray(),
                 WriteType.WithResponse
             )
         }
@@ -142,10 +142,10 @@ public class BluetoothViewModel {
         scannerScope.launch {
             peripheral?.write(
                 characteristicOf(
-                    SERVICE_WIRELESS_SERVICE,
-                    CHARACTERISTIC_WIRELESS_COMMANDER
+                    BluetoothConstants.SERVICE_WIRELESS_SERVICE,
+                    BluetoothConstants.CHARACTERISTIC_WIRELESS_COMMANDER
                 ),
-                GET_NETWORKS.toByteArray(),
+                BluetoothConstants.GET_NETWORKS.toByteArray(),
                 WriteType.WithResponse
             )
         }
@@ -174,8 +174,8 @@ public class BluetoothViewModel {
                         .forEach {
                             p.write(
                                 characteristicOf(
-                                    SERVICE_WIRELESS_SERVICE,
-                                    CHARACTERISTIC_WIRELESS_COMMANDER
+                                    BluetoothConstants.SERVICE_WIRELESS_SERVICE,
+                                    BluetoothConstants.CHARACTERISTIC_WIRELESS_COMMANDER
                                 ),
                                 it,
                                 WriteType.WithResponse
@@ -190,16 +190,5 @@ public class BluetoothViewModel {
                 }
             }
         }
-    }
-
-    private companion object {
-        const val SERVICE_WIRELESS_SERVICE = "e081fec0-f757-4449-b9c9-bfa83133f7fc"
-        const val CHARACTERISTIC_WIRELESS_COMMANDER = "e081fec1-f757-4449-b9c9-bfa83133f7fc"
-        const val CHARACTERISTIC_WIRELESS_COMMANDER_RESPONSE = "e081fec2-f757-4449-b9c9-bfa83133f7fc"
-        const val CHARACTERISTIC_WIRELESS_CONNECTION_STATUS = "e081fec3-f757-4449-b9c9-bfa83133f7fc"
-
-        private const val GET_NETWORKS = "{\"c\":0}\n"
-        private const val SCAN = "{\"c\":4}\n"
-        private const val PI_MAC_ADDRESS = "B8:27:EB:E2:8F:2F"
     }
 }

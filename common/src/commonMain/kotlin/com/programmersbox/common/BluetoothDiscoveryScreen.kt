@@ -79,7 +79,7 @@ internal fun <T, R> BluetoothDiscoveryScreen(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             CircularProgressIndicator()
-                            Text("Please Wait...")
+                            Text(LocalLocale.current.pleaseWait)
                         }
                     }
                 }
@@ -101,10 +101,11 @@ private fun <T> BluetoothSearching(
     connectOverBle: () -> Unit,
     actions: @Composable RowScope.() -> Unit = {}
 ) {
+    val locale = LocalLocale.current
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Find PillCounter") },
+                title = { Text(locale.findPillCounter) },
                 navigationIcon = { BackButton() },
                 actions = actions
             )
@@ -115,7 +116,7 @@ private fun <T> BluetoothSearching(
                     onClick = connectOverBle,
                     modifier = Modifier.fillMaxWidth(),
                     enabled = device != null && !isConnecting
-                ) { Text("Connect") }
+                ) { Text(locale.connect) }
             }
         }
     ) { padding ->
@@ -159,12 +160,13 @@ private fun <R> WifiConnect(
     ssid: (R?) -> String,
     signalStrength: (R?) -> Int
 ) {
+    val locale = LocalLocale.current
     var password by remember { mutableStateOf("") }
     var hidePassword by remember { mutableStateOf(true) }
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Connect PillCounter to Wifi") },
+                title = { Text(locale.connectPillCounterToWiFi) },
                 actions = {
                     AnimatedVisibility(
                         networkItem != null
@@ -181,7 +183,7 @@ private fun <R> WifiConnect(
                 floatingActionButton = {
                     ExtendedFloatingActionButton(
                         icon = { Icon(Icons.Default.Send, null) },
-                        text = { Text("Connect") },
+                        text = { Text(locale.connect) },
                         onClick = { connectToWifi(password) }
                     )
                 },
@@ -190,7 +192,7 @@ private fun <R> WifiConnect(
                         onClick = getNetworks,
                     ) {
                         Icon(Icons.Default.Refresh, null)
-                        Text("Refresh Networks")
+                        Text(locale.refreshNetworks)
                     }
                 }
             )
@@ -205,7 +207,7 @@ private fun <R> WifiConnect(
                             onValueChange = {},
                             modifier = Modifier.fillMaxWidth(),
                             readOnly = true,
-                            label = { Text("SSID") },
+                            label = { Text(locale.ssid) },
                             leadingIcon = { Icon(Icons.Default.Wifi, null) },
                         )
                         OutlinedTextField(
@@ -214,7 +216,7 @@ private fun <R> WifiConnect(
                             singleLine = true,
                             visualTransformation = if (hidePassword) PasswordVisualTransformation() else VisualTransformation.None,
                             modifier = Modifier.fillMaxWidth(),
-                            label = { Text("Password") },
+                            label = { Text(locale.password) },
                             leadingIcon = { Icon(Icons.Default.WifiPassword, null) },
                             trailingIcon = {
                                 IconToggleButton(
@@ -259,4 +261,15 @@ private fun <R> WifiConnect(
 
 public enum class BluetoothState {
     Searching, Wifi, Checking
+}
+
+internal object BluetoothConstants {
+    internal const val SERVICE_WIRELESS_SERVICE: String = "e081fec0-f757-4449-b9c9-bfa83133f7fc"
+    internal const val CHARACTERISTIC_WIRELESS_COMMANDER: String = "e081fec1-f757-4449-b9c9-bfa83133f7fc"
+    internal const val CHARACTERISTIC_WIRELESS_COMMANDER_RESPONSE: String = "e081fec2-f757-4449-b9c9-bfa83133f7fc"
+    internal const val CHARACTERISTIC_WIRELESS_CONNECTION_STATUS: String = "e081fec3-f757-4449-b9c9-bfa83133f7fc"
+
+    internal const val GET_NETWORKS = "{\"c\":0}\n"
+    internal const val SCAN = "{\"c\":4}\n"
+    internal const val PI_MAC_ADDRESS = "B8:27:EB:E2:8F:2F"
 }

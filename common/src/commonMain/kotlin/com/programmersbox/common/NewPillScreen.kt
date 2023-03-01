@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.dp
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun NewPill(viewModel: NewPillViewModel) {
+    val locale = LocalLocale.current
     val navigator = LocalNavigator.current
     Scaffold(
         bottomBar = {
@@ -32,7 +33,7 @@ internal fun NewPill(viewModel: NewPillViewModel) {
                         .fillMaxWidth()
                         .padding(horizontal = 4.dp),
                     enabled = !viewModel.isNewPillLoading
-                ) { Text("Save") }
+                ) { Text(locale.save) }
             }
         }
     ) { padding ->
@@ -45,7 +46,7 @@ internal fun NewPill(viewModel: NewPillViewModel) {
             OutlinedTextField(
                 value = viewModel.newPill.name,
                 onValueChange = { viewModel.updatePill(name = it) },
-                label = { Text("Pill Name") },
+                label = { Text(locale.pillName) },
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -73,8 +74,8 @@ internal fun NewPill(viewModel: NewPillViewModel) {
                         modifier = Modifier.fillMaxSize()
                     ) {
                         Text(viewModel.newPill.pillWeight.toString())
-                        Text("Pill Weight (in grams)")
-                        Text("Press to start calibration")
+                        Text(locale.pillWeightCalibration)
+                        Text(locale.pressToStartCalibration)
                     }
                 }
 
@@ -91,8 +92,8 @@ internal fun NewPill(viewModel: NewPillViewModel) {
                         modifier = Modifier.fillMaxSize()
                     ) {
                         Text(viewModel.newPill.bottleWeight.toString())
-                        Text("Bottle Weight (in grams)")
-                        Text("Press to start calibration")
+                        Text(locale.bottleWeightCalibration)
+                        Text(locale.pressToStartCalibration)
                     }
                 }
             }
