@@ -47,7 +47,7 @@ internal class NewPillViewModel(private val pillViewModel: PillViewModel) : View
             ?.launchIn(viewModelScope)
     }
 
-    internal fun sendNewConfig(pillWeights: PillWeights) {
+    private fun sendNewConfig(pillWeights: PillWeights) {
         viewModelScope.launch {
             network?.updateConfig(pillWeights)
                 ?.onSuccess { println(it) }
@@ -59,7 +59,18 @@ internal class NewPillViewModel(private val pillViewModel: PillViewModel) : View
         viewModelScope.launch { db.updateInfo(pillCount) }
     }
 
-    internal fun saveNewConfig(pillWeights: PillWeights) {
+    private fun saveNewConfig(pillWeights: PillWeights) {
         viewModelScope.launch { db.savePillWeightInfo(pillWeights) }
+    }
+
+    internal fun saveAndSend() {
+        val pill = if (newPill.uuid.isEmpty()) {
+            newPill.copy(uuid = randomUUID())
+        } else {
+            newPill
+        }
+        saveNewConfig(pill)
+        sendNewConfig(pill)
+        newPill = PillWeights()
     }
 }

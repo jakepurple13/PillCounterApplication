@@ -19,15 +19,8 @@ internal fun NewPill(viewModel: NewPillViewModel) {
             BottomAppBar {
                 OutlinedButton(
                     onClick = {
-                        val pill = if (viewModel.newPill.uuid.isEmpty()) {
-                            viewModel.newPill.copy(uuid = randomUUID())
-                        } else {
-                            viewModel.newPill
-                        }
-                        viewModel.saveNewConfig(pill)
-                        viewModel.sendNewConfig(pill)
+                        viewModel.saveAndSend()
                         navigator.goBack()
-                        viewModel.newPill = PillWeights()
                     },
                     modifier = Modifier
                         .fillMaxWidth()
