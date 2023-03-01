@@ -232,24 +232,39 @@ private fun <R> WifiConnect(
                         )
                     }
                 } else {
-                    LazyColumn {
-                        items(wifiNetworks) {
-                            Card(onClick = { onNetworkItemClick(it) }) {
-                                ListItem(
-                                    headlineText = { Text(ssid(it)) },
-                                    leadingContent = {
-                                        Icon(
-                                            when (signalStrength(it)) {
-                                                in 0..25 -> Icons.Default.NetworkWifi1Bar
-                                                in 25..50 -> Icons.Default.NetworkWifi2Bar
-                                                in 50..75 -> Icons.Default.NetworkWifi3Bar
-                                                in 50..75 -> Icons.Default.SignalWifi4Bar
-                                                else -> Icons.Default.SignalWifiStatusbarNull
-                                            },
-                                            null
-                                        )
-                                    }
-                                )
+                    PullToRefresh(
+                        state = rememberPullToRefreshState(false),
+                        onRefresh = getNetworks,
+                        indicator = { state, refreshTrigger, refreshingOffset ->
+                            PullToRefreshIndicator(
+                                state,
+                                refreshTrigger,
+                                refreshingOffset,
+                                releaseToRefresh = locale::releaseToRefresh,
+                                refreshing = locale::refreshing,
+                                pullToRefresh = locale::pullToRefresh
+                            )
+                        }
+                    ) {
+                        LazyColumn {
+                            items(wifiNetworks) {
+                                Card(onClick = { onNetworkItemClick(it) }) {
+                                    ListItem(
+                                        headlineText = { Text(ssid(it)) },
+                                        leadingContent = {
+                                            Icon(
+                                                when (signalStrength(it)) {
+                                                    in 0..25 -> Icons.Default.NetworkWifi1Bar
+                                                    in 25..50 -> Icons.Default.NetworkWifi2Bar
+                                                    in 50..75 -> Icons.Default.NetworkWifi3Bar
+                                                    in 50..75 -> Icons.Default.SignalWifi4Bar
+                                                    else -> Icons.Default.SignalWifiStatusbarNull
+                                                },
+                                                null
+                                            )
+                                        }
+                                    )
+                                }
                             }
                         }
                     }

@@ -1,3 +1,4 @@
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -13,6 +14,7 @@ import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberTrayState
 import com.programmersbox.common.PillViewModel
 import com.programmersbox.common.UIShow
+import com.programmersbox.common.round
 import moe.tlaster.precompose.navigation.Navigator
 import java.util.prefs.Preferences
 
@@ -36,7 +38,7 @@ fun main() = application {
             onClick = {}
         )
         Item(
-            "Pill Count: ${pillCount.formattedCount()}",
+            "Pill Count: ${animateFloatAsState(pillCount.count.toFloat()).value.toDouble().round(2)}",
             onClick = {}
         )
         Item(

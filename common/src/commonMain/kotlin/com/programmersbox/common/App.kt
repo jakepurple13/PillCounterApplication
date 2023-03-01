@@ -199,6 +199,15 @@ internal fun DrawerInfo(
                             ) { Icon(Icons.Default.MenuOpen, null) }
                         },
                         actions = {
+                            AnimatedVisibility(vm.connectionError) {
+                                IconButton(
+                                    onClick = { vm.showErrorBanner = true },
+                                    colors = IconButtonDefaults.iconButtonColors(
+                                        contentColor = MaterialTheme.colorScheme.error
+                                    ),
+                                    enabled = !vm.showErrorBanner
+                                ) { Icon(Icons.Default.Warning, null) }
+                            }
                             IconButton(
                                 onClick = { vm.showDiscovery() },
                                 colors = IconButtonDefaults.iconButtonColors(
@@ -246,7 +255,7 @@ internal fun DrawerInfo(
                     }
 
                     BannerBox(
-                        showBanner = vm.connectedState == ConnectionState.Error
+                        showBanner = vm.showErrorBanner
                     ) {
                         Surface(
                             modifier = Modifier
@@ -283,11 +292,16 @@ internal fun DrawerInfo(
                                         modifier = Modifier.weight(1f),
                                         colors = ButtonDefaults.buttonColors(
                                             containerColor = MaterialTheme.colorScheme.error
-                                        ),
-                                        enabled = !vm.isConnectionLoading
+                                        )
                                     ) { Text(locale.retryConnection) }
                                 }
-                                if (vm.isConnectionLoading) CircularProgressIndicator()
+                                TextButton(
+                                    onClick = { vm.showErrorBanner = false },
+                                    colors = ButtonDefaults.textButtonColors(
+                                        contentColor = MaterialTheme.colorScheme.error
+                                    ),
+                                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                                ) { Text(locale.close) }
                             }
                         }
                     }

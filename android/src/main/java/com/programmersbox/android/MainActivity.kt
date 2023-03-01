@@ -57,7 +57,8 @@ class MainActivity : PreComposeActivity() {
                         refreshNetworks = stringResource(R.string.refreshNetworks),
                         releaseToRefresh = stringResource(R.string.release_to_refresh),
                         refreshing = stringResource(R.string.refreshing),
-                        pullToRefresh = stringResource(R.string.pull_to_refresh)
+                        pullToRefresh = stringResource(R.string.pull_to_refresh),
+                        close = stringResource(R.string.close)
                     )
                 )
             }

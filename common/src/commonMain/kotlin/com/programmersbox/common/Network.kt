@@ -9,11 +9,15 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.*
 import io.ktor.serialization.kotlinx.json.*
+import io.ktor.utils.io.errors.*
+import io.ktor.websocket.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.isActive
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.withTimeout
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
 internal class Network(
@@ -62,14 +66,48 @@ internal class Network(
         }
     }
 
-    fun socketConnection(): Flow<Result<PillCount>> = flow {
-        while (client.isActive) {
-            runCatching { getApi<PillCount>("$url/currentCount") }
-                .onSuccess { it?.let { p -> emit(Result.success(p)) } }
-                .onFailure { emit(Result.failure(it)) }
-            delay(1000)
+    fun socketConnection(): Flow<Result<PillCount>> = channelFlow {
+        websocketClient.ws(
+            method = HttpMethod.Get,
+            host = url.host,
+            port = url.port,
+            path = "/ws"
+        ) {
+            async {
+                incoming.consumeEach {
+                    when (it) {
+                        is Frame.Text -> {
+                            try {
+                                send(Result.success(json.decodeFromString<PillCount>(it.readText())))
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                            }
+                        }
+
+                        is Frame.Close -> {
+                            send(Result.failure(Exception("Nope")))
+                            close()
+                        }
+
+                        else -> {
+                            send(Result.failure(Exception("Nope")))
+                            println(it)
+                        }
+                    }
+                }
+            }.await()
         }
     }
+        .retryWhen { cause, attempt ->
+            emit(Result.failure(cause))
+            println("#$attempt: ${cause.message}")
+            if (attempt >= 10) {
+                false
+            } else {
+                cause is IOException
+            }
+        }
+        .flowOn(Dispatchers.Default)
 
     fun pillWeightCalibration(): Flow<PillWeights> = flow {
         withTimeout(5000) {

@@ -15,7 +15,6 @@ public class PillViewModel(
     internal val db = Database(viewModelScope)
 
     internal var network: Network? = null
-    internal var isConnectionLoading by mutableStateOf(false)
 
     public var pillCount: PillCount by mutableStateOf(PillCount(0.0, PillWeights()))
         private set
@@ -32,6 +31,8 @@ public class PillViewModel(
 
     internal val connectionError by derivedStateOf { connectedState == ConnectionState.Error }
 
+    internal var showErrorBanner by mutableStateOf(false)
+
     init {
         snapshotFlow { connectedState }
             .filter { connectedState == ConnectionState.Connected }
@@ -39,6 +40,10 @@ public class PillViewModel(
                 delay(2500)
                 connectedState = ConnectionState.Idle
             }
+            .launchIn(viewModelScope)
+
+        snapshotFlow { connectedState }
+            .onEach { showErrorBanner = connectionError }
             .launchIn(viewModelScope)
 
         viewModelScope.launch {
@@ -70,13 +75,11 @@ public class PillViewModel(
 
     internal fun reconnect() {
         viewModelScope.launch {
-            if (!isConnectionLoading) db.url().firstOrNull()?.let { connectToNetwork(it) }
+            db.url().firstOrNull()?.let { connectToNetwork(it) }
         }
     }
 
     private fun connectToNetwork(url: String) {
-        isConnectionLoading = true
-
         network?.close()
 
         network = Network(Url("http://$url:8080"))
@@ -87,7 +90,6 @@ public class PillViewModel(
                 emit(Result.failure(it))
             }
             .onEach { result ->
-                isConnectionLoading = false
                 result
                     .onSuccess { pill ->
                         if (connectedState != ConnectionState.Idle || firstTime) {
