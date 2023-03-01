@@ -39,8 +39,8 @@ public actual fun getPlatformName(): String {
 }
 
 @Composable
-public fun UIShow() {
-    App()
+public fun UIShow(localization: Localization = Localization()) {
+    App(localization = localization)
 }
 
 internal actual class Database actual constructor(scope: CoroutineScope) {

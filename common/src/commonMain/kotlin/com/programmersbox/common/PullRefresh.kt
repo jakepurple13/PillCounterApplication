@@ -264,7 +264,7 @@ internal fun PullToRefresh(
                 .let { if (!clipIndicatorToPadding) it.clipToBounds() else it }
                 .padding(indicatorPadding)
                 .matchParentSize()
-                // Else, if we're are clipping to the padding, we use clipToBounds() after
+                // Else, if we're clipping to the padding, we use clipToBounds() after
                 // the padding() modifier.
                 .let { if (clipIndicatorToPadding) it.clipToBounds() else it }
         ) {

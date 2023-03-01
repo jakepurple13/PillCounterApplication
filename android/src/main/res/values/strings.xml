@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pull_to_refresh">Pull to refresh</string>
+    <string name="release_to_refresh">Release to refresh</string>
+    <string name="refreshing">Refreshing</string>
+    <string name="saved">Saved</string>
+    <string name="pills">%1$.2f pills</string>
+    <string name="updateCurrentConfig">Update Current Config</string>
+    <string name="saveCurrentConfig">Save Current Config</string>
+    <string name="home">Home</string>
+    <string name="addNewPill">Add New Pill</string>
+    <string name="areYouSureYouWantToRemoveThis">Are you sre you want to remove this?</string>
+    <string name="pillWeight">Pill Weight: %1$.2f</string>
+    <string name="bottleWeight">Bottle Weight: %1$.2f</string>
+    <string name="pillWeightCalibration">Pill Weight (in grams)</string>
+    <string name="bottleWeightCalibration">Bottle Weight (in grams)</string>
+    <string name="findPillCounter">Find Pill Counter</string>
+    <string name="retryConnection">Retry Connection</string>
+    <string name="somethingWentWrongWithTheConnection">Something went wrong with the connection</string>
+    <string name="connected">Connected</string>
+    <string name="id_info">ID: %1$s</string>
+    <string name="pillName">Pill Name</string>
+    <string name="save">Save</string>
+    <string name="pressToStartCalibration">Press to start calibration</string>
+    <string name="discover">Discover</string>
+    <string name="enterIpAddress">Enter ip address</string>
+    <string name="manualIP">Manual IP</string>
+    <string name="discovery">Discovery</string>
+    <string name="needToConnectPillCounterToWifi">Need to connect PillCounter to Wi-Fi?</string>
+    <string name="connect">Connect</string>
+    <string name="pleaseWait">Please Wait…</string>
+    <string name="ssid">SSID</string>
+    <string name="password">Password</string>
+    <string name="connectPillCounterToWiFi">Connect PillCounter to Wi-Fi</string>
+    <string name="refreshNetworks">Refresh Networks</string>
+</resources>
