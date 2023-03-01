@@ -39,10 +39,8 @@ public actual fun getPlatformName(): String {
 }
 
 @Composable
-public fun UIShow(
-    backHandler: @Composable (PillViewModel) -> Unit = {}
-) {
-    App(backHandler = backHandler)
+public fun UIShow() {
+    App()
 }
 
 internal actual class Database actual constructor(scope: CoroutineScope) {

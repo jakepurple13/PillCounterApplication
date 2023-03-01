@@ -13,9 +13,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import moe.tlaster.precompose.navigation.BackHandler
 import moe.tlaster.precompose.navigation.NavHost
 import moe.tlaster.precompose.navigation.Navigator
 import moe.tlaster.precompose.navigation.rememberNavigator
@@ -29,10 +31,7 @@ internal fun App(
     navigator: Navigator = rememberNavigator(),
     scope: CoroutineScope = rememberCoroutineScope(),
     vm: PillViewModel = remember { PillViewModel(navigator, scope) },
-    backHandler: @Composable (PillViewModel) -> Unit = {}
 ) {
-    backHandler(vm)
-
     CompositionLocalProvider(
         LocalNavigator provides navigator,
     ) {
@@ -43,12 +42,6 @@ internal fun App(
             ) {
                 scene(
                     PillState.MainScreen.route,
-                    navTransition = NavTransition(
-                        createTransition = slideInHorizontally { width -> -width },
-                        resumeTransition = slideInHorizontally { width -> -width },
-                        pauseTransition = slideOutHorizontally { width -> width },
-                        destroyTransition = slideOutHorizontally { width -> width }
-                    )
                 ) {
                     DrawerInfo(
                         vm = vm,
@@ -58,12 +51,6 @@ internal fun App(
                 }
                 scene(
                     PillState.NewPill.route,
-                    navTransition = NavTransition(
-                        createTransition = slideInHorizontally { width -> -width },
-                        resumeTransition = slideInHorizontally { width -> -width },
-                        pauseTransition = slideOutHorizontally { width -> width },
-                        destroyTransition = slideOutHorizontally { width -> width }
-                    )
                 ) {
                     val newPillVm = viewModel(NewPillViewModel::class) { NewPillViewModel(vm) }
                     DrawerInfo(
@@ -75,19 +62,19 @@ internal fun App(
                 scene(
                     PillState.BluetoothDiscovery.route,
                     navTransition = NavTransition(
-                        createTransition = slideInVertically { height -> height },
-                        resumeTransition = slideInVertically { height -> height },
-                        pauseTransition = slideOutVertically { height -> -height },
-                        destroyTransition = slideOutHorizontally { height -> -height }
+                        createTransition = slideInVertically { height -> -height },
+                        resumeTransition = slideInVertically { height -> -height },
+                        pauseTransition = slideOutVertically { height -> height },
+                        destroyTransition = slideOutVertically { height -> height }
                     )
                 ) { BluetoothDiscovery(vm) }
                 scene(
                     PillState.Discovery.route,
                     navTransition = NavTransition(
-                        createTransition = slideInVertically { height -> height },
-                        resumeTransition = slideInVertically { height -> height },
-                        pauseTransition = slideOutVertically { height -> -height },
-                        destroyTransition = slideOutHorizontally { height -> -height }
+                        createTransition = slideInVertically { height -> -height },
+                        resumeTransition = slideInVertically { height -> -height },
+                        pauseTransition = slideOutVertically { height -> height },
+                        destroyTransition = slideOutVertically { height -> height }
                     )
                 ) { DiscoveryScreen(vm) }
             }
@@ -106,10 +93,15 @@ internal fun DrawerInfo(
 ) {
     val scope = rememberCoroutineScope()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
+    if (drawerState.isOpen) {
+        BackHandler { scope.launch { drawerState.close() } }
+    }
+
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet {
+                val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
                 Scaffold(
                     topBar = {
                         TopAppBar(
@@ -118,9 +110,11 @@ internal fun DrawerInfo(
                                 IconButton(
                                     onClick = { scope.launch { drawerState.close() } }
                                 ) { Icon(Icons.Default.Close, null) }
-                            }
+                            },
+                            scrollBehavior = scrollBehavior
                         )
-                    }
+                    },
+                    modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
                 ) { padding ->
                     LazyColumn(
                         verticalArrangement = Arrangement.spacedBy(2.dp),
