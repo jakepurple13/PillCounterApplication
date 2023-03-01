@@ -1,5 +1,6 @@
 package com.programmersbox.common
 
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -42,7 +43,7 @@ internal fun HomeScreen(viewModel: PillViewModel) {
         ) {
             Text(viewModel.pillCount.pillWeights.name)
             Text(
-                locale.pills(viewModel.pillCount.formattedCount()),
+                locale.pills(animateFloatAsState(viewModel.pillCount.formattedCount().toFloat()).value.toDouble()),
                 style = MaterialTheme.typography.titleLarge
             )
             Row(

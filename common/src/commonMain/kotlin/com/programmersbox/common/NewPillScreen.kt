@@ -73,7 +73,13 @@ internal fun NewPill(viewModel: NewPillViewModel) {
                         verticalArrangement = Arrangement.Center,
                         modifier = Modifier.fillMaxSize()
                     ) {
-                        Text(viewModel.newPill.pillWeight.toString())
+                        Text(
+                            animateFloatAsState(viewModel.newPill.pillWeight.toFloat())
+                                .value
+                                .toDouble()
+                                .round(2)
+                                .toString()
+                        )
                         Text(locale.pillWeightCalibration)
                         Text(locale.pressToStartCalibration)
                     }
@@ -91,7 +97,13 @@ internal fun NewPill(viewModel: NewPillViewModel) {
                         verticalArrangement = Arrangement.Center,
                         modifier = Modifier.fillMaxSize()
                     ) {
-                        Text(viewModel.newPill.bottleWeight.toString())
+                        Text(
+                            animateFloatAsState(viewModel.newPill.bottleWeight.toFloat())
+                                .value
+                                .toDouble()
+                                .round(2)
+                                .toString()
+                        )
                         Text(locale.bottleWeightCalibration)
                         Text(locale.pressToStartCalibration)
                     }
