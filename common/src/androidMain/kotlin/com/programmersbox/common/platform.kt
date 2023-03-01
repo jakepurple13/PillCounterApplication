@@ -159,7 +159,6 @@ internal actual val hasBLEDiscovery: Boolean = true
 @Composable
 internal actual fun BluetoothDiscovery(viewModel: PillViewModel) {
     val navigator = LocalNavigator.current
-
     PermissionRequest(
         listOf(
             *if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -194,7 +193,7 @@ internal actual fun BluetoothDiscovery(viewModel: PillViewModel) {
             deviceName = { it?.name ?: it?.peripheralName ?: "Device" },
             isDeviceSelected = { found, selected -> found?.address == selected?.address },
             networkItem = vm.networkItem,
-            onNetworkItemClick = { vm.networkClick(it) },
+            onNetworkItemClick = vm::networkClick,
             wifiNetworks = vm.wifiNetworks,
             connectToWifi = vm::connectToWifi,
             getNetworks = vm::getNetworks,
