@@ -12,10 +12,13 @@ import androidx.compose.ui.window.Notification
 import androidx.compose.ui.window.Tray
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberTrayState
+import com.programmersbox.common.Localization
 import com.programmersbox.common.PillViewModel
 import com.programmersbox.common.UIShow
 import com.programmersbox.common.round
 import moe.tlaster.precompose.navigation.Navigator
+import java.text.MessageFormat
+import java.util.*
 import java.util.prefs.Preferences
 
 fun main() = application {
@@ -38,28 +41,31 @@ fun main() = application {
             onClick = {}
         )
         Item(
-            "Pill Count: ${animateFloatAsState(pillCount.count.toFloat()).value.toDouble().round(2)}",
+            desktopViewModel.bundle.getString(
+                "pillCount",
+                animateFloatAsState(pillCount.count.toFloat()).value.toDouble().round(2)
+            ),
             onClick = {}
         )
         Item(
-            "Pill Weight: ${pillCount.pillWeights.pillWeight}",
+            desktopViewModel.locale.pillWeight(pillCount.pillWeights.pillWeight),
             onClick = {}
         )
         Item(
-            "Bottle Weight: ${pillCount.pillWeights.bottleWeight}",
+            desktopViewModel.locale.bottleWeight(pillCount.pillWeights.bottleWeight),
             onClick = {}
         )
         Separator()
         Item(
-            if (isOpen) "Close PillCounter Window" else "Open PillCounter Window",
+            desktopViewModel.bundle.getString(if (isOpen) "closeWindow" else "openWindow"),
             onClick = { isOpen = !isOpen }
         )
         Item(
-            "Preferences",
+            desktopViewModel.bundle.getString("preferences"),
             onClick = { openPreferences = !openPreferences }
         )
         Item(
-            "Quit",
+            desktopViewModel.bundle.getString("quit"),
             onClick = ::exitApplication
         )
     }
@@ -71,8 +77,8 @@ fun main() = application {
         ) {
             trayState.sendNotification(
                 Notification(
-                    title = "Low on ${pillCount.pillWeights.name}",
-                    message = "You have ~${pillCount.count} left"
+                    title = desktopViewModel.bundle.getString("lowOnPills", pillCount.pillWeights.name),
+                    message = desktopViewModel.bundle.getString("youHaveLeft", pillCount.count)
                 )
             )
         }
@@ -82,13 +88,13 @@ fun main() = application {
         WindowWithBar(
             onCloseRequest = { isOpen = false },
             windowTitle = "PillCounter",
-        ) { UIShow(navigator, pillViewModel) }
+        ) { UIShow(desktopViewModel.locale, navigator, pillViewModel) }
     }
 
     if (openPreferences) {
         WindowWithBar(
             onCloseRequest = { openPreferences = false },
-            windowTitle = "PillCounter Settings",
+            windowTitle = desktopViewModel.bundle.getString("settings"),
         ) { PreferencesWindow(desktopViewModel) }
     }
 }
@@ -97,7 +103,7 @@ fun main() = application {
 @Composable
 private fun PreferencesWindow(desktopViewModel: DesktopViewModel) {
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Settings") }) }
+        topBar = { TopAppBar(title = { Text(desktopViewModel.bundle.getString("settings")) }) }
     ) { padding ->
         Column(
             modifier = Modifier
@@ -105,7 +111,7 @@ private fun PreferencesWindow(desktopViewModel: DesktopViewModel) {
                 .padding(padding)
         ) {
             ListItem(
-                headlineText = { Text("Alert Threshold") },
+                headlineText = { Text(desktopViewModel.bundle.getString("alertThreshold")) },
                 supportingText = {
                     Column {
                         Text(desktopViewModel.alertThreshold.toString())
@@ -123,9 +129,53 @@ private fun PreferencesWindow(desktopViewModel: DesktopViewModel) {
     }
 }
 
+internal fun ResourceBundle.getString(key: String, vararg params: Any) =
+    MessageFormat.format(getString(key), *params)
+
 internal class DesktopViewModel {
 
     private val preferences = Preferences.userNodeForPackage(DesktopViewModel::class.java)
+
+    internal val bundle by lazy { ResourceBundle.getBundle("strings") }
+
+    val locale by lazy {
+        Localization(
+            saved = bundle.getString("saved"),
+            pills = { bundle.getString("pills", it.round(2)) },
+            updateCurrentConfig = bundle.getString("updateCurrentConfig"),
+            saveCurrentConfig = bundle.getString("saveCurrentConfig"),
+            home = bundle.getString("home"),
+            addNewPill = bundle.getString("addNewPill"),
+            areYouSureYouWantToRemoveThis = bundle.getString("areYouSureYouWantToRemoveThis"),
+            pillWeight = { bundle.getString("pillWeight", it.round(2)) },
+            bottleWeight = { bundle.getString("bottleWeight", it.round(2)) },
+            pillWeightCalibration = bundle.getString("pillWeightCalibration"),
+            bottleWeightCalibration = bundle.getString("bottleWeightCalibration"),
+            findPillCounter = bundle.getString("findPillCounter"),
+            retryConnection = bundle.getString("retryConnection"),
+            somethingWentWrongWithTheConnection = bundle.getString("somethingWentWrongWithTheConnection"),
+            connected = bundle.getString("connected"),
+            id = { bundle.getString("id_info", it) },
+            pillName = bundle.getString("pillName"),
+            save = bundle.getString("save"),
+            pressToStartCalibration = bundle.getString("pressToStartCalibration"),
+            discover = bundle.getString("discover"),
+            enterIpAddress = bundle.getString("enterIpAddress"),
+            manualIP = bundle.getString("manualIP"),
+            discovery = bundle.getString("discovery"),
+            needToConnectPillCounterToWifi = bundle.getString("needToConnectPillCounterToWifi"),
+            connect = bundle.getString("connect"),
+            pleaseWait = bundle.getString("pleaseWait"),
+            ssid = bundle.getString("ssid"),
+            password = bundle.getString("password"),
+            connectPillCounterToWiFi = bundle.getString("connectPillCounterToWiFi"),
+            refreshNetworks = bundle.getString("refreshNetworks"),
+            releaseToRefresh = bundle.getString("release_to_refresh"),
+            refreshing = bundle.getString("refreshing"),
+            pullToRefresh = bundle.getString("pull_to_refresh"),
+            close = bundle.getString("close")
+        )
+    }
 
     var alertThreshold by mutableStateOf(preferences.getInt(PILL_COUNTER_ALERT_THRESHOLD, 10))
         private set

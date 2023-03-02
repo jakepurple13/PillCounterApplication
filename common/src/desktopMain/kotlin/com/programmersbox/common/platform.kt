@@ -1,7 +1,6 @@
 package com.programmersbox.common
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
 import com.programmersbox.database.PillWeightDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -25,10 +24,15 @@ public actual fun getPlatformName(): String {
 
 @Composable
 public fun UIShow(
+    localization: Localization,
     navigator: Navigator,
     vm: PillViewModel,
 ) {
-    App(navigator = navigator, scope = rememberCoroutineScope(), vm = vm)
+    App(
+        localization = localization,
+        navigator = navigator,
+        vm = vm
+    )
 }
 
 internal actual class Database actual constructor(scope: CoroutineScope) {
