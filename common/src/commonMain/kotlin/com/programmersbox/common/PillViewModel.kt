@@ -1,6 +1,7 @@
 package com.programmersbox.common
 
 import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import io.ktor.http.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
@@ -19,7 +20,7 @@ public class PillViewModel(
     public var pillCount: PillCount by mutableStateOf(PillCount(0.0, PillWeights()))
         private set
 
-    internal val pillWeightList = mutableStateListOf<PillCount>()
+    public val pillWeightList: SnapshotStateList<PillCount> = mutableStateListOf()
 
     internal val pillAlreadySaved by derivedStateOf {
         pillWeightList.any { it.pillWeights.uuid == pillCount.pillWeights.uuid }
@@ -110,7 +111,7 @@ public class PillViewModel(
         sendNewConfig(pillWeights)
     }
 
-    private fun sendNewConfig(pillWeights: PillWeights) {
+    public fun sendNewConfig(pillWeights: PillWeights) {
         viewModelScope.launch {
             network?.updateConfig(pillWeights)
                 ?.onSuccess { println(it) }

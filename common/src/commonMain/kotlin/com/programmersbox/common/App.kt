@@ -25,6 +25,7 @@ import moe.tlaster.precompose.navigation.transition.NavTransition
 import moe.tlaster.precompose.ui.viewModel
 
 internal val LocalNavigator = staticCompositionLocalOf<Navigator> { error("No NavController Found!") }
+internal val LocalLocale: ProvidableCompositionLocal<Localization> = staticCompositionLocalOf { error("Nothing Here!") }
 
 @Composable
 internal fun App(

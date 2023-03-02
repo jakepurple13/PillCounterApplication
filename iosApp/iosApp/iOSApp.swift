@@ -54,7 +54,43 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                     }
                     action(ipArray)
                 }
-            }
+            },
+            localization: Localization(
+                saved: NSLocalizedString("saved", comment: ""),
+                pills: { p in String.localizedStringWithFormat(NSLocalizedString("pills", comment: ""), p) },
+                updateCurrentConfig: NSLocalizedString("updateCurrentConfig", comment: ""),
+                saveCurrentConfig: NSLocalizedString("saveCurrentConfig", comment: ""),
+                home: NSLocalizedString("home", comment: ""),
+                addNewPill: NSLocalizedString("addNewPill", comment: ""),
+                areYouSureYouWantToRemoveThis: NSLocalizedString("areYouSureYouWantToRemoveThis", comment: ""),
+                pillWeight: { p in String(format: NSLocalizedString("pillWeight", comment: ""), p) },
+                bottleWeight: { p in String(format: NSLocalizedString("bottleWeight", comment: ""), p) },
+                pillWeightCalibration: NSLocalizedString("pillWeightCalibration", comment: ""),
+                bottleWeightCalibration: NSLocalizedString("bottleWeightCalibration", comment: ""),
+                findPillCounter: NSLocalizedString("findPillCounter", comment: ""),
+                retryConnection: NSLocalizedString("retryConnection", comment: ""),
+                somethingWentWrongWithTheConnection: NSLocalizedString("somethingWentWrongWithTheConnection", comment: ""),
+                connected: NSLocalizedString("connected", comment: ""),
+                id: { p in String(format: NSLocalizedString("id", comment: ""), p) },
+                pillName: NSLocalizedString("pillName", comment: ""),
+                save: NSLocalizedString("save", comment: ""),
+                pressToStartCalibration: NSLocalizedString("pressToStartCalibration", comment: ""),
+                discover: NSLocalizedString("discover", comment: ""),
+                enterIpAddress: NSLocalizedString("enterIpAddress", comment: ""),
+                manualIP: NSLocalizedString("manualIP", comment: ""),
+                discovery: NSLocalizedString("discovery", comment: ""),
+                needToConnectPillCounterToWifi: NSLocalizedString("needToConnectPillCounterToWifi", comment: ""),
+                connect: NSLocalizedString("connect", comment: ""),
+                pleaseWait: NSLocalizedString("pleaseWait", comment: ""),
+                ssid: NSLocalizedString("ssid", comment: ""),
+                password: NSLocalizedString("password", comment: ""),
+                connectPillCounterToWiFi: NSLocalizedString("connectPillCounterToWiFi", comment: ""),
+                refreshNetworks: NSLocalizedString("refreshNetworks", comment: ""),
+                releaseToRefresh: NSLocalizedString("release_to_refresh", comment: ""),
+                refreshing: NSLocalizedString("refreshing", comment: ""),
+                pullToRefresh: NSLocalizedString("pull_to_refresh", comment: ""),
+                close: NSLocalizedString("close", comment: "")
+            )
         )
         window?.rootViewController = mainViewController
         window?.makeKeyAndVisible()

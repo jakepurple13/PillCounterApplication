@@ -43,7 +43,7 @@ internal fun HomeScreen(viewModel: PillViewModel) {
         ) {
             Text(viewModel.pillCount.pillWeights.name)
             Text(
-                locale.pills(animateFloatAsState(viewModel.pillCount.formattedCount().toFloat()).value.toDouble()),
+                locale.pills(animateFloatAsState(viewModel.pillCount.count.toFloat()).value.toDouble().round(2)),
                 style = MaterialTheme.typography.titleLarge
             )
             Row(

@@ -36,10 +36,16 @@ fun main() = application {
         state = trayState,
         icon = rememberVectorPainter(Icons.Default.Medication),
     ) {
-        Item(
-            pillCount.pillWeights.name,
-            onClick = {}
-        )
+        Menu(
+            pillCount.pillWeights.name
+        ) {
+            pillViewModel.pillWeightList.forEach {
+                Item(
+                    it.pillWeights.name,
+                    onClick = { pillViewModel.sendNewConfig(it.pillWeights) }
+                )
+            }
+        }
         Item(
             desktopViewModel.bundle.getString(
                 "pillCount",

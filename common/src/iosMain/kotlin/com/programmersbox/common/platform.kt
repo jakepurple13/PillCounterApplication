@@ -31,14 +31,15 @@ public actual fun getPlatformName(): String {
 }
 
 @Composable
-private fun UIShow() {
-    App()
+private fun UIShow(localization: Localization) {
+    App(localization = localization)
 }
 
 internal var discoverAction: ((List<IpInfo>) -> Unit) -> Unit = {}
 
 public fun MainViewController(
-    actionOnDiscover: ((List<IpInfo>) -> Unit) -> Unit = {}
+    actionOnDiscover: ((List<IpInfo>) -> Unit) -> Unit = {},
+    localization: Localization
 ): UIViewController {
     discoverAction = actionOnDiscover
     return PreComposeApplication("PillCounter") {
@@ -52,7 +53,7 @@ public fun MainViewController(
                     modifier = Modifier.fillMaxSize(),
                 ) {
                     Spacer(Modifier.height(30.dp))
-                    UIShow()
+                    UIShow(localization)
                 }
             }
         }
