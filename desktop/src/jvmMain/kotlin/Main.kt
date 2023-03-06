@@ -37,12 +37,25 @@ fun main() = application {
         icon = rememberVectorPainter(Icons.Default.Medication),
     ) {
         Menu(
+            pillViewModel.url
+        ) {
+            pillViewModel.urlHistory.forEach {
+                Item(
+                    it,
+                    onClick = { pillViewModel.changeNetwork(it) },
+                    enabled = it != pillViewModel.url
+                )
+            }
+        }
+        Separator()
+        Menu(
             pillCount.pillWeights.name
         ) {
             pillViewModel.pillWeightList.forEach {
                 Item(
                     it.pillWeights.name,
-                    onClick = { pillViewModel.sendNewConfig(it.pillWeights) }
+                    onClick = { pillViewModel.sendNewConfig(it.pillWeights) },
+                    enabled = it.pillWeights.uuid != pillCount.pillWeights.uuid
                 )
             }
         }

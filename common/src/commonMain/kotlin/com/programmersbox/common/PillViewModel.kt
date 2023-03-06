@@ -34,9 +34,8 @@ public class PillViewModel(
 
     internal var showErrorBanner by mutableStateOf(false)
 
-    internal val urlHistory = mutableStateListOf<String>()
-
-    internal var url by mutableStateOf("")
+    public val urlHistory: SnapshotStateList<String> = mutableStateListOf()
+    public var url: String by mutableStateOf("")
 
     init {
         snapshotFlow { connectedState }
@@ -87,7 +86,7 @@ public class PillViewModel(
         viewModelScope.launch { db.removeUrl(url) }
     }
 
-    internal fun changeNetwork(url: String) {
+    public fun changeNetwork(url: String) {
         viewModelScope.launch { db.saveUrl(url) }
     }
 
