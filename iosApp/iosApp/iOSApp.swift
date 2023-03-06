@@ -89,7 +89,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 releaseToRefresh: NSLocalizedString("release_to_refresh", comment: ""),
                 refreshing: NSLocalizedString("refreshing", comment: ""),
                 pullToRefresh: NSLocalizedString("pull_to_refresh", comment: ""),
-                close: NSLocalizedString("close", comment: "")
+                close: NSLocalizedString("close", comment: ""),
+                pastDevices: NSLocalizedString("pastDevices", "")
             )
         )
         window?.rootViewController = mainViewController

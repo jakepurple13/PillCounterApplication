@@ -129,6 +129,9 @@ internal actual class Database actual constructor(scope: CoroutineScope) {
             uuid = pillCount.pillWeights.uuid,
         )
     }
+
+    actual suspend fun urlHistory() = db.getUrlHistory()
+    actual suspend fun removeUrl(url: String) = db.removeUrl(url)
 }
 
 internal actual fun DiscoveryViewModel.discover() {

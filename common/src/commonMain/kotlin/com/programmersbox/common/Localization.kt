@@ -34,5 +34,6 @@ public class Localization(
     public val releaseToRefresh: String = "Release To Refresh",
     public val refreshing: String = "Refreshing",
     public val pullToRefresh: String = "Pull to Refresh",
-    public val close: String = "Close"
+    public val close: String = "Close",
+    public val pastDevices: String = "Past Devices"
 )

@@ -58,7 +58,8 @@ class MainActivity : PreComposeActivity() {
                         releaseToRefresh = stringResource(R.string.release_to_refresh),
                         refreshing = stringResource(R.string.refreshing),
                         pullToRefresh = stringResource(R.string.pull_to_refresh),
-                        close = stringResource(R.string.close)
+                        close = stringResource(R.string.close),
+                        pastDevices = stringResource(R.string.pastDevices)
                     )
                 )
             }

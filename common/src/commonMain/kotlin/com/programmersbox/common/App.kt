@@ -1,7 +1,6 @@
 package com.programmersbox.common
 
 import androidx.compose.animation.*
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -12,7 +11,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
@@ -125,64 +123,21 @@ internal fun DrawerInfo(
                         contentPadding = padding
                     ) {
                         items(vm.pillWeightList) {
-                            var remove by remember { mutableStateOf(false) }
-                            AnimatedContent(
-                                remove,
-                                transitionSpec = {
-                                    if (targetState > initialState) {
-                                        slideInHorizontally { width -> -width } + fadeIn() with
-                                                slideOutHorizontally { width -> width } + fadeOut()
-                                    } else {
-                                        slideInHorizontally { width -> width } + fadeIn() with
-                                                slideOutHorizontally { width -> -width } + fadeOut()
-                                    }.using(SizeTransform(clip = false))
-                                }
-                            ) { target ->
-                                if (target) {
-                                    OutlinedCard(
-                                        border = BorderStroke(
-                                            CardDefaults.outlinedCardBorder().width,
-                                            Color.Red
-                                        )
-                                    ) {
-                                        ListItem(
-                                            leadingContent = {
-                                                IconButton(onClick = { remove = false }) {
-                                                    Icon(Icons.Default.Close, null)
-                                                }
-                                            },
-                                            headlineText = { Text(locale.areYouSureYouWantToRemoveThis) },
-                                            supportingText = { Text(it.pillWeights.name) },
-                                            trailingContent = {
-                                                IconButton(onClick = { vm.removeConfig(it.pillWeights) }) {
-                                                    Icon(Icons.Default.Check, null)
-                                                }
-                                            }
-                                        )
+                            SwipeToRemove(
+                                item = it,
+                                onRemoveClick = { vm.removeConfig(it.pillWeights) },
+                                onClick = { drawerClick(it.pillWeights) },
+                                removingSupporting = { Text(it.pillWeights.name) },
+                                headlineText = { Text(it.pillWeights.name) },
+                                supportingText = {
+                                    Column {
+                                        Text(locale.bottleWeight(it.pillWeights.bottleWeight))
+                                        Text(locale.pillWeight(it.pillWeights.pillWeight))
                                     }
-                                } else {
-                                    ElevatedCard(
-                                        onClick = { drawerClick(it.pillWeights) }
-                                    ) {
-                                        ListItem(
-                                            headlineText = { Text(it.pillWeights.name) },
-                                            supportingText = {
-                                                Column {
-                                                    Text(locale.bottleWeight(it.pillWeights.bottleWeight))
-                                                    Text(locale.pillWeight(it.pillWeights.pillWeight))
-                                                }
-                                            },
-                                            overlineText = { Text(locale.id(it.pillWeights.uuid)) },
-                                            leadingContent = { Text(it.formattedCount().toString()) },
-                                            trailingContent = {
-                                                IconButton(onClick = { remove = true }) {
-                                                    Icon(Icons.Default.Delete, null)
-                                                }
-                                            }
-                                        )
-                                    }
-                                }
-                            }
+                                },
+                                leadingContent = { Text(it.formattedCount().toString()) },
+                                overlineText = { Text(locale.id(it.pillWeights.uuid)) },
+                            )
                         }
                     }
                 }

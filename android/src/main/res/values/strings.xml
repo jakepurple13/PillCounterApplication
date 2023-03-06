@@ -34,4 +34,5 @@
     <string name="connectPillCounterToWiFi">Connect PillCounter to Wi-Fi</string>
     <string name="refreshNetworks">Refresh Networks</string>
     <string name="close">Close</string>
+    <string name="pastDevices">Past Devices</string>
 </resources>

@@ -5,9 +5,11 @@ import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.ext.asFlow
 import io.realm.kotlin.ext.realmListOf
+import io.realm.kotlin.ext.realmSetOf
 import io.realm.kotlin.migration.AutomaticSchemaMigration
 import io.realm.kotlin.types.RealmList
 import io.realm.kotlin.types.RealmObject
+import io.realm.kotlin.types.RealmSet
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.map
@@ -27,6 +29,7 @@ internal class PillWeightConfig : RealmObject {
 
 internal class PillCounterServerConfig : RealmObject {
     var url: String = ""
+    var urlHistory: RealmSet<String> = realmSetOf()
 }
 
 public class PillWeightDatabase {
@@ -39,7 +42,7 @@ public class PillWeightDatabase {
                     PillCounterServerConfig::class
                 )
             )
-                .schemaVersion(20)
+                .schemaVersion(22)
                 .migration(AutomaticSchemaMigration { })
                 .deleteRealmIfMigrationNeeded()
                 .build()
@@ -70,6 +73,11 @@ public class PillWeightDatabase {
         .mapNotNull { it.obj }
         .distinctUntilChangedBy { it.url }
         .map { it.url }
+
+    public suspend fun getUrlHistory(): Flow<List<String>> = serverConfigDb().asFlow()
+        .mapNotNull { it.obj }
+        .distinctUntilChangedBy { it.urlHistory }
+        .map { it.urlHistory.toList() }
 
     public suspend fun getLatest(): Flow<PillWeightsDB> = currentPillDb().asFlow()
         .mapNotNull { it.obj }
@@ -132,7 +140,16 @@ public class PillWeightDatabase {
     }
 
     public suspend fun saveUrl(url: String) {
-        realm.updateInfo<PillCounterServerConfig> { it?.url = url }
+        realm.updateInfo<PillCounterServerConfig> {
+            it?.url = url
+            it?.urlHistory?.add(url)
+        }
+    }
+
+    public suspend fun removeUrl(url: String) {
+        realm.updateInfo<PillCounterServerConfig> {
+            it?.urlHistory?.remove(url)
+        }
     }
 }
 

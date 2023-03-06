@@ -25,6 +25,8 @@ internal actual class Database actual constructor(scope: CoroutineScope) {
     actual suspend fun currentPill(): Flow<PillCount> = flowOf()
     actual suspend fun updateCurrentPill(pillCount: PillCount) = Unit
     actual suspend fun updateCurrentCountInfo(pillCount: PillCount) = Unit
+    actual suspend fun urlHistory() = flowOf(emptyList<String>())
+    actual suspend fun removeUrl(url: String) = Unit
 }
 
 internal actual fun DiscoveryViewModel.discover() {

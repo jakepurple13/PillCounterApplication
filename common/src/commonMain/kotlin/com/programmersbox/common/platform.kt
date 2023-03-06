@@ -12,6 +12,8 @@ internal expect class Database(scope: CoroutineScope) {
     suspend fun currentPill(): Flow<PillCount>
     suspend fun updateCurrentPill(pillCount: PillCount)
     suspend fun saveUrl(url: String)
+    suspend fun urlHistory(): Flow<List<String>>
+    suspend fun removeUrl(url: String)
     suspend fun savePillWeightInfo(pillWeights: PillWeights)
     suspend fun removePillWeightInfo(pillWeights: PillWeights)
     suspend fun updateInfo(pillCount: PillCount)

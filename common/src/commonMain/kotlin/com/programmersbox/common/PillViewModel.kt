@@ -34,6 +34,10 @@ public class PillViewModel(
 
     internal var showErrorBanner by mutableStateOf(false)
 
+    internal val urlHistory = mutableStateListOf<String>()
+
+    internal var url by mutableStateOf("")
+
     init {
         snapshotFlow { connectedState }
             .filter { connectedState == ConnectionState.Connected }
@@ -68,6 +72,19 @@ public class PillViewModel(
                 .onEach { connectToNetwork(it) }
                 .launchIn(this)
         }
+
+        viewModelScope.launch {
+            db.urlHistory()
+                .onEach {
+                    urlHistory.clear()
+                    urlHistory.addAll(it)
+                }
+                .launchIn(this)
+        }
+    }
+
+    internal fun removeUrl(url: String) {
+        viewModelScope.launch { db.removeUrl(url) }
     }
 
     internal fun changeNetwork(url: String) {
@@ -84,6 +101,7 @@ public class PillViewModel(
         network?.close()
 
         network = Network(Url("http://$url:8080"))
+        this.url = url
 
         network!!.socketConnection()
             .catch {
