@@ -11,12 +11,9 @@ import io.ktor.serialization.kotlinx.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.utils.io.errors.*
 import io.ktor.websocket.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.consumeEach
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.withTimeout
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
@@ -43,6 +40,8 @@ internal class Network(
         }
     }
 
+    private var socketSession: WebSocketSession? = null
+
     private suspend inline fun <reified T> getApi(
         url: String,
         noinline builder: HttpRequestBuilder.() -> Unit = {}
@@ -67,41 +66,40 @@ internal class Network(
     }
 
     fun socketConnection(): Flow<Result<PillCount>> = channelFlow {
-        websocketClient.ws(
+        socketSession = websocketClient.webSocketSession(
             method = HttpMethod.Get,
             host = url.host,
             port = url.port,
             path = "/ws"
-        ) {
-            async {
-                incoming.consumeEach {
-                    when (it) {
-                        is Frame.Text -> {
-                            try {
-                                send(Result.success(json.decodeFromString<PillCount>(it.readText())))
-                            } catch (e: Exception) {
-                                e.printStackTrace()
-                            }
-                        }
-
-                        is Frame.Close -> {
-                            send(Result.failure(Exception("Nope")))
-                            close()
-                        }
-
-                        else -> {
-                            send(Result.failure(Exception("Nope")))
-                            println(it)
+        )
+        async {
+            socketSession!!.incoming.consumeEach {
+                when (it) {
+                    is Frame.Text -> {
+                        try {
+                            send(Result.success(json.decodeFromString<PillCount>(it.readText())))
+                        } catch (e: Exception) {
+                            e.printStackTrace()
                         }
                     }
+
+                    is Frame.Close -> {
+                        send(Result.failure(Exception("Nope")))
+                        close()
+                    }
+
+                    else -> {
+                        send(Result.failure(Exception("Nope")))
+                        println(it)
+                    }
                 }
-            }.await()
-        }
+            }
+        }.await()
     }
         .retryWhen { cause, attempt ->
             emit(Result.failure(cause))
             println("#$attempt: ${cause.message}")
-            if (attempt >= 10) {
+            if (attempt >= 10 || socketSession?.isActive == true) {
                 false
             } else {
                 cause is IOException
@@ -118,8 +116,9 @@ internal class Network(
         }
     }
 
-    fun close() {
+    suspend fun close() {
         client.close()
         websocketClient.close()
+        socketSession?.close()
     }
 }

@@ -80,7 +80,7 @@ public class PillViewModel(
         }
     }
 
-    private fun connectToNetwork(url: String) {
+    private suspend fun connectToNetwork(url: String) {
         network?.close()
 
         network = Network(Url("http://$url:8080"))
