@@ -82,10 +82,9 @@ internal fun Navigator.navigateToNewPill() = navigate(
 
 @OptIn(ExperimentalAnimationApi::class, ExperimentalMaterial3Api::class)
 @Composable
-internal fun <T> SwipeToRemove(
-    item: T,
-    onRemoveClick: (T) -> Unit,
-    onClick: (T) -> Unit,
+internal fun SwipeToRemove(
+    onRemoveClick: () -> Unit,
+    onClick: () -> Unit,
     headlineText: @Composable () -> Unit = {},
     supportingText: (@Composable () -> Unit)? = null,
     leadingContent: (@Composable () -> Unit)? = null,
@@ -122,7 +121,7 @@ internal fun <T> SwipeToRemove(
                     headlineText = { Text(locale.areYouSureYouWantToRemoveThis) },
                     supportingText = removingSupporting,
                     trailingContent = {
-                        IconButton(onClick = { onRemoveClick(item) }) {
+                        IconButton(onClick = onRemoveClick) {
                             Icon(Icons.Default.Check, null)
                         }
                     }
@@ -130,7 +129,7 @@ internal fun <T> SwipeToRemove(
             }
         } else {
             ElevatedCard(
-                onClick = { onClick(item) }
+                onClick = onClick
             ) {
                 ListItem(
                     headlineText = headlineText,

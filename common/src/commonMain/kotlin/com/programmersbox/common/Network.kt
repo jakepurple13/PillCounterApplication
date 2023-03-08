@@ -20,7 +20,6 @@ import kotlinx.serialization.json.Json
 internal class Network(
     private val url: Url = Url("http://${BuildKonfig.serverLocalIpAddress}:8080")
 ) {
-
     private val json = Json {
         isLenient = true
         prettyPrint = true
@@ -66,6 +65,7 @@ internal class Network(
     }
 
     fun socketConnection(): Flow<Result<PillCount>> = channelFlow {
+        socketSession?.close()
         socketSession = websocketClient.webSocketSession(
             method = HttpMethod.Get,
             host = url.host,

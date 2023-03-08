@@ -1,6 +1,9 @@
 package com.programmersbox.common
 
-import androidx.compose.animation.*
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -83,7 +86,7 @@ internal fun App(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun DrawerInfo(
     vm: PillViewModel,
@@ -124,7 +127,6 @@ internal fun DrawerInfo(
                     ) {
                         items(vm.pillWeightList) {
                             SwipeToRemove(
-                                item = it,
                                 onRemoveClick = { vm.removeConfig(it.pillWeights) },
                                 onClick = { drawerClick(it.pillWeights) },
                                 removingSupporting = { Text(it.pillWeights.name) },

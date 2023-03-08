@@ -62,9 +62,8 @@ internal fun DiscoveryScreen(viewModel: PillViewModel) {
                     ) {
                         items(viewModel.urlHistory) {
                             SwipeToRemove(
-                                item = it,
-                                onRemoveClick = viewModel::removeUrl,
-                                onClick = vm::connect,
+                                onRemoveClick = { viewModel.removeUrl(it) },
+                                onClick = { vm.connect(it) },
                                 headlineText = { Text(it) },
                                 removingSupporting = { Text(it) },
                                 leadingContent = {
