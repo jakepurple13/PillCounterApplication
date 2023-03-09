@@ -8,7 +8,7 @@ import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.material.icons.filled.WifiFind
 import androidx.compose.material.icons.filled.WifiOff
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
@@ -85,9 +85,20 @@ fun MainScreen(
                         }
                         stickyHeader { TopAppBar(title = { Text("Pills") }) }
                         items(vm.pillWeightList) {
+                            var showDialog by remember { mutableStateOf(false) }
+                            if (showDialog) {
+                                SendingDialog(
+                                    pillCount = it,
+                                    networks = vm.network.values.toList(),
+                                    onSend = { ip ->
+                                        vm.onDrawerItemMainScreenClick(it.pillWeights, ip)
+                                    },
+                                    onDismissRequest = { showDialog = false }
+                                )
+                            }
                             SwipeToRemove(
                                 onRemoveClick = { vm.removeConfig(it.pillWeights) },
-                                onClick = { vm.onDrawerItemMainScreenClick(it.pillWeights, "") },
+                                onClick = { showDialog = true },
                                 removingSupporting = { Text(it.pillWeights.name) },
                                 headlineText = { Text(it.pillWeights.name) },
                                 supportingText = {

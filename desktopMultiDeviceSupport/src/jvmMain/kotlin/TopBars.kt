@@ -86,14 +86,7 @@ fun WindowWithBar(
                                         else MaterialTheme.colorScheme.surfaceVariant
                                     ).value,
                                     elevation = 0.dp,
-                                ) {
-                                    when (hostOs) {
-                                        OS.Linux -> LinuxTopBar(state, onCloseRequest, windowTitle)
-                                        OS.Windows -> WindowsTopBar(state, onCloseRequest, windowTitle)
-                                        OS.MacOS -> MacOsTopBar(state, onCloseRequest, windowTitle)
-                                        else -> {}
-                                    }
-                                }
+                                ) { NativeTopBar(state, onCloseRequest, windowTitle) }
                             }
                             Divider(color = MaterialTheme.colorScheme.onSurface)
                         }
@@ -113,7 +106,31 @@ fun WindowWithBar(
 }
 
 @Composable
-fun LinuxTopBar(state: WindowState, onExit: () -> Unit, windowTitle: String = "") {
+fun NativeTopBar(
+    state: WindowState,
+    onCloseRequest: () -> Unit,
+    windowTitle: String = "",
+    showMinimize: Boolean = true,
+    showMaximize: Boolean = true,
+    showClose: Boolean = true
+) {
+    when (hostOs) {
+        OS.Linux -> LinuxTopBar(state, onCloseRequest, windowTitle, showMinimize, showMaximize, showClose)
+        OS.Windows -> WindowsTopBar(state, onCloseRequest, windowTitle, showMinimize, showMaximize, showClose)
+        OS.MacOS -> MacOsTopBar(state, onCloseRequest, windowTitle, showMinimize, showMaximize, showClose)
+        else -> {}
+    }
+}
+
+@Composable
+fun LinuxTopBar(
+    state: WindowState,
+    onExit: () -> Unit,
+    windowTitle: String = "",
+    showMinimize: Boolean = true,
+    showMaximize: Boolean = true,
+    showClose: Boolean = true
+) {
     Box(modifier = Modifier.fillMaxSize()) {
         Row(
             modifier = Modifier.align(Alignment.CenterEnd),
@@ -127,21 +144,24 @@ fun LinuxTopBar(state: WindowState, onExit: () -> Unit, windowTitle: String = ""
                 .width(60.dp)
                 .hoverable(hoverInteraction)
 
-            CloseButton(onExit, modifier, isHovering)
+            if (showClose)
+                CloseButton(onExit, modifier, isHovering)
 
-            MinimizeButton(
-                onMinimize = { state.isMinimized = !state.isMinimized },
-                modifier, isHovering
-            )
+            if (showMinimize)
+                MinimizeButton(
+                    onMinimize = { state.isMinimized = !state.isMinimized },
+                    modifier, isHovering
+                )
 
-            MaximizeButton(
-                onMaximize = {
-                    state.placement = if (state.placement != WindowPlacement.Maximized) WindowPlacement.Maximized
-                    else WindowPlacement.Floating
-                },
-                icon = Icons.Default.Maximize,
-                modifier, isHovering
-            )
+            if (showMaximize)
+                MaximizeButton(
+                    onMaximize = {
+                        state.placement = if (state.placement != WindowPlacement.Maximized) WindowPlacement.Maximized
+                        else WindowPlacement.Floating
+                    },
+                    icon = Icons.Default.Maximize,
+                    modifier, isHovering
+                )
         }
 
         Text(
@@ -152,7 +172,14 @@ fun LinuxTopBar(state: WindowState, onExit: () -> Unit, windowTitle: String = ""
 }
 
 @Composable
-fun WindowsTopBar(state: WindowState, onExit: () -> Unit, windowTitle: String = "") {
+fun WindowsTopBar(
+    state: WindowState,
+    onExit: () -> Unit,
+    windowTitle: String = "",
+    showMinimize: Boolean = true,
+    showMaximize: Boolean = true,
+    showClose: Boolean = true
+) {
     Box(modifier = Modifier.fillMaxSize()) {
         Row(
             modifier = Modifier.align(Alignment.CenterEnd),
@@ -165,21 +192,24 @@ fun WindowsTopBar(state: WindowState, onExit: () -> Unit, windowTitle: String = 
                 .width(60.dp)
                 .hoverable(hoverInteraction)
 
-            CloseButton(onExit, modifier, isHovering)
+            if (showClose)
+                CloseButton(onExit, modifier, isHovering)
 
-            MinimizeButton(
-                onMinimize = { state.isMinimized = !state.isMinimized },
-                modifier, isHovering
-            )
+            if (showMinimize)
+                MinimizeButton(
+                    onMinimize = { state.isMinimized = !state.isMinimized },
+                    modifier, isHovering
+                )
 
-            MaximizeButton(
-                onMaximize = {
-                    state.placement = if (state.placement != WindowPlacement.Maximized) WindowPlacement.Maximized
-                    else WindowPlacement.Floating
-                },
-                icon = Icons.Default.Maximize,
-                modifier, isHovering
-            )
+            if (showMaximize)
+                MaximizeButton(
+                    onMaximize = {
+                        state.placement = if (state.placement != WindowPlacement.Maximized) WindowPlacement.Maximized
+                        else WindowPlacement.Floating
+                    },
+                    icon = Icons.Default.Maximize,
+                    modifier, isHovering
+                )
         }
 
         Text(
@@ -190,7 +220,13 @@ fun WindowsTopBar(state: WindowState, onExit: () -> Unit, windowTitle: String = 
 }
 
 @Composable
-fun MacOsTopBar(state: WindowState, onExit: () -> Unit, windowTitle: String = "") {
+fun MacOsTopBar(
+    state: WindowState,
+    onExit: () -> Unit, windowTitle: String = "",
+    showMinimize: Boolean = true,
+    showMaximize: Boolean = true,
+    showClose: Boolean = true
+) {
     Box(modifier = Modifier.fillMaxSize()) {
         Row(
             modifier = Modifier.align(Alignment.CenterStart),
@@ -203,21 +239,24 @@ fun MacOsTopBar(state: WindowState, onExit: () -> Unit, windowTitle: String = ""
                 .width(60.dp)
                 .hoverable(hoverInteraction)
 
-            CloseButton(onExit, modifier, isHovering)
+            if (showClose)
+                CloseButton(onExit, modifier, isHovering)
 
-            MinimizeButton(
-                onMinimize = { state.isMinimized = !state.isMinimized },
-                modifier, isHovering
-            )
+            if (showMinimize)
+                MinimizeButton(
+                    onMinimize = { state.isMinimized = !state.isMinimized },
+                    modifier, isHovering
+                )
 
-            MaximizeButton(
-                onMaximize = {
-                    state.placement = if (state.placement != WindowPlacement.Fullscreen) WindowPlacement.Fullscreen
-                    else WindowPlacement.Floating
-                },
-                icon = if (state.placement != WindowPlacement.Fullscreen) Icons.Default.Fullscreen else Icons.Default.FullscreenExit,
-                modifier, isHovering
-            )
+            if (showMaximize)
+                MaximizeButton(
+                    onMaximize = {
+                        state.placement = if (state.placement != WindowPlacement.Fullscreen) WindowPlacement.Fullscreen
+                        else WindowPlacement.Floating
+                    },
+                    icon = if (state.placement != WindowPlacement.Fullscreen) Icons.Default.Fullscreen else Icons.Default.FullscreenExit,
+                    modifier, isHovering
+                )
         }
 
         Text(

@@ -19,9 +19,9 @@ import java.util.prefs.Preferences
 
 @OptIn(ExperimentalMaterial3Api::class)
 fun main() = application {
-    //TODO: Maaaaybe try making a multiple device supported version?
-    // also for all the drawers, make them expect so that desktop can have permanent drawers
-    // maybe make a new module for this
+    //TODO: Need to add new pill screen
+    // need to add, pressing on pills and asking what devices to send the config to
+    // need to ask what devices to send config to from new pill screen
 
     //TODO: ALSO! On the watchdog, maybe have it print the watchdog logs in a different color
 
