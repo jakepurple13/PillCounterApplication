@@ -19,11 +19,10 @@ public fun HomeScreen(
     pillAlreadySaved: Boolean,
     updateConfig: (PillCount) -> Unit,
     saveNewConfig: (PillWeights) -> Unit,
-    topBar: @Composable () -> Unit = {}
+    modifier: Modifier = Modifier
 ) {
     val locale = LocalLocale.current
     Scaffold(
-        topBar = topBar,
         bottomBar = {
             BottomAppBar {
                 if (pillAlreadySaved) {
@@ -42,7 +41,8 @@ public fun HomeScreen(
                     ) { Text(locale.saveCurrentConfig) }
                 }
             }
-        }
+        },
+        modifier = modifier
     ) { padding ->
         Column(
             modifier = Modifier

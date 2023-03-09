@@ -65,6 +65,15 @@ public val Emerald: Color = Color(0xFF2ecc71)
 
 @OptIn(ExperimentalObjCRefinement::class)
 @HiddenFromObjC
+public val Sunflower: Color = Color(0xFFf1c40f)
+
+@OptIn(ExperimentalObjCRefinement::class)
+@HiddenFromObjC
+public val Alizarin: Color = Color(0xFFe74c3c)
+
+
+@OptIn(ExperimentalObjCRefinement::class)
+@HiddenFromObjC
 public fun Navigator.navigate(state: PillState, options: NavOptions? = null): Unit = navigate(state.route, options)
 
 @OptIn(ExperimentalObjCRefinement::class)

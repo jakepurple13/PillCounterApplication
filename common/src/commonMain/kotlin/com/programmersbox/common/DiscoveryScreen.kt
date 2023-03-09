@@ -29,6 +29,7 @@ import kotlin.native.HiddenFromObjC
 @Composable
 public fun DiscoveryScreen(
     drawerState: DrawerState? = null,
+    navigationIcon: @Composable () -> Unit = { BackButton() },
     changeNetwork: (String) -> Unit
 ) {
     val locale = LocalLocale.current
@@ -43,7 +44,7 @@ public fun DiscoveryScreen(
         topBar = {
             TopAppBar(
                 title = { Text(locale.discovery) },
-                navigationIcon = { BackButton() },
+                navigationIcon = navigationIcon,
                 actions = {
                     if (drawerState != null) {
                         IconButton(

@@ -7,7 +7,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.window.Notification
 import androidx.compose.ui.window.Tray
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberTrayState
@@ -32,7 +31,6 @@ fun main() = application {
     var isOpen by remember { mutableStateOf(true) }
     var openPreferences by remember { mutableStateOf(false) }
     var openDiscovery by remember { mutableStateOf(false) }
-    val pillCount = pillViewModel.pillCount
 
     CompositionLocalProvider(
         LocalNavigator provides navigator,
@@ -72,29 +70,17 @@ fun main() = application {
             )
         }
 
-        LaunchedEffect(desktopViewModel.alertThreshold, pillCount) {
-            if (
-                pillCount.count <= desktopViewModel.alertThreshold &&
-                pillCount.count > 0 && pillCount.pillWeights.uuid.isNotEmpty()
-            ) {
-                trayState.sendNotification(
-                    Notification(
-                        title = desktopViewModel.bundle.getString("lowOnPills", pillCount.pillWeights.name),
-                        message = desktopViewModel.bundle.getString("youHaveLeft", pillCount.count)
-                    )
-                )
-            }
-        }
-
         if (isOpen) {
             WindowWithBar(
                 onCloseRequest = { isOpen = false },
                 windowTitle = "PillCounter",
             ) {
                 MainScreen(
-                    desktopViewModel.locale,
-                    pillViewModel
-                ) { openDiscovery = it }
+                    desktopViewModel = desktopViewModel,
+                    locale = desktopViewModel.locale,
+                    vm = pillViewModel,
+                    onShowDiscovery = { openDiscovery = it },
+                )
             }
         }
 
@@ -103,7 +89,7 @@ fun main() = application {
                 onCloseRequest = { openDiscovery = false },
                 windowTitle = "Discovery",
             ) {
-                DiscoveryScreen { pillViewModel.changeNetwork(it) }
+                DiscoveryScreen(navigationIcon = {}) { pillViewModel.changeNetwork(it) }
             }
         }
 
@@ -135,8 +121,8 @@ private fun PreferencesWindow(desktopViewModel: DesktopViewModel) {
                         Slider(
                             value = desktopViewModel.alertThreshold.toFloat(),
                             onValueChange = { desktopViewModel.setThreshold(it.toInt()) },
-                            valueRange = 0f..50f,
-                            steps = 50
+                            valueRange = 0f..100f,
+                            steps = 100
                         )
                     }
                 }
@@ -149,7 +135,7 @@ private fun PreferencesWindow(desktopViewModel: DesktopViewModel) {
 internal fun ResourceBundle.getString(key: String, vararg params: Any) =
     MessageFormat.format(getString(key), *params)
 
-internal class DesktopViewModel {
+class DesktopViewModel {
 
     private val preferences = Preferences.userNodeForPackage(DesktopViewModel::class.java)
 

@@ -1,9 +1,12 @@
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Medication
 import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.material.icons.filled.WifiFind
 import androidx.compose.material.icons.filled.WifiOff
@@ -17,6 +20,7 @@ import com.programmersbox.common.*
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun MainScreen(
+    desktopViewModel: DesktopViewModel,
     locale: Localization,
     vm: MultiPillViewModel,
     onShowDiscovery: (Boolean) -> Unit
@@ -40,6 +44,14 @@ fun MainScreen(
                     ) {
                         stickyHeader { TopAppBar(title = { Text("Devices") }) }
                         items(vm.network.values.toList()) {
+                            val containerColor = when (it.connectionState) {
+                                ConnectionState.Error -> MaterialTheme.colorScheme.errorContainer
+                                else -> MaterialTheme.colorScheme.surface
+                            }.animate().value
+
+                            val isLowOnPills = it.pillCount.count <= desktopViewModel.alertThreshold &&
+                                    it.pillCount.count > 0 && it.pillCount.pillWeights.uuid.isNotEmpty()
+
                             SwipeToRemove(
                                 onRemoveClick = { vm.removeUrl(it.ip) },
                                 onClick = {
@@ -57,29 +69,35 @@ fun MainScreen(
                                         Text(it.pillCount.pillWeights.name)
                                     }
                                 },
-                                overlineText = if (it.connectionState == ConnectionState.Error) {
-                                    { Text("Press to Try to Reconnect") }
-                                } else null,
+                                overlineText = {
+                                    when {
+                                        it.connectionState == ConnectionState.Error -> Text("Press to Try to Reconnect")
+                                        isLowOnPills -> Text("Low on Pills")
+                                    }
+                                },
                                 leadingContent = {
-                                    Icon(
-                                        when (it.connectionState) {
-                                            ConnectionState.Connected -> Icons.Default.Wifi
-                                            ConnectionState.Error -> Icons.Default.WifiOff
-                                            ConnectionState.Idle -> Icons.Default.WifiFind
-                                        }, null
-                                    )
+                                    Column {
+                                        Icon(
+                                            when (it.connectionState) {
+                                                ConnectionState.Connected -> Icons.Default.Wifi
+                                                ConnectionState.Error -> Icons.Default.WifiOff
+                                                ConnectionState.Idle -> Icons.Default.WifiFind
+                                            }, null
+                                        )
+                                        AnimatedVisibility(isLowOnPills) {
+                                            Icon(
+                                                Icons.Default.Medication,
+                                                null,
+                                                tint = Alizarin
+                                            )
+                                        }
+                                    }
                                 },
                                 elevatedCardColors = CardDefaults.elevatedCardColors(
-                                    containerColor = when (it.connectionState) {
-                                        ConnectionState.Error -> MaterialTheme.colorScheme.errorContainer
-                                        else -> MaterialTheme.colorScheme.surface
-                                    }.animate().value
+                                    containerColor = containerColor
                                 ),
                                 elevatedListItemColors = ListItemDefaults.colors(
-                                    containerColor = when (it.connectionState) {
-                                        ConnectionState.Error -> MaterialTheme.colorScheme.errorContainer
-                                        else -> MaterialTheme.colorScheme.surface
-                                    }.animate().value
+                                    containerColor = containerColor
                                 )
                             )
                         }
@@ -116,19 +134,24 @@ fun MainScreen(
             }
         }
     ) {
-        HomeScreen(
-            vm.pillCount,
-            vm.pillAlreadySaved,
-            vm::updateConfig,
-            vm::saveNewConfig
-        ) {
-            TopAppBar(
-                title = { Text("Pill Counter") },
-                actions = {
-                    IconButton(
-                        onClick = { onShowDiscovery(true) }
-                    ) { Icon(Icons.Default.Wifi, null) }
-                }
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text("Pill Counter") },
+                    actions = {
+                        IconButton(
+                            onClick = { onShowDiscovery(true) }
+                        ) { Icon(Icons.Default.Wifi, null) }
+                    }
+                )
+            }
+        ) { padding ->
+            HomeScreen(
+                vm.pillCount,
+                vm.pillAlreadySaved,
+                vm::updateConfig,
+                vm::saveNewConfig,
+                modifier = Modifier.padding(padding)
             )
         }
     }
