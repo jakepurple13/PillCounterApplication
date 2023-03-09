@@ -17,6 +17,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import moe.tlaster.precompose.navigation.NavOptions
 import moe.tlaster.precompose.navigation.Navigator
+import kotlin.experimental.ExperimentalObjCRefinement
+import kotlin.native.HiddenFromObjC
 
 @Composable
 internal fun BannerBox(
@@ -52,37 +54,50 @@ internal fun BackButton() {
     IconButton(onClick = navigator::goBack) { Icon(Icons.Default.ArrowBack, null) }
 }
 
+@OptIn(ExperimentalObjCRefinement::class)
+@HiddenFromObjC
 @Composable
-internal fun Color.animate() = animateColorAsState(this)
+public fun Color.animate(): State<Color> = animateColorAsState(this)
 
-internal val Emerald = Color(0xFF2ecc71)
+@OptIn(ExperimentalObjCRefinement::class)
+@HiddenFromObjC
+public val Emerald: Color = Color(0xFF2ecc71)
 
-internal fun Navigator.navigate(state: PillState, options: NavOptions? = null) = navigate(state.route, options)
+@OptIn(ExperimentalObjCRefinement::class)
+@HiddenFromObjC
+public fun Navigator.navigate(state: PillState, options: NavOptions? = null): Unit = navigate(state.route, options)
 
-internal fun Navigator.navigateToBLEDiscovery() = navigate(
+@OptIn(ExperimentalObjCRefinement::class)
+@HiddenFromObjC
+public fun Navigator.navigateToBLEDiscovery(): Unit = navigate(
     PillState.BluetoothDiscovery,
     NavOptions(
         launchSingleTop = true
     )
 )
 
-internal fun Navigator.navigateToDiscovery() = navigate(
+@OptIn(ExperimentalObjCRefinement::class)
+@HiddenFromObjC
+public fun Navigator.navigateToDiscovery(): Unit = navigate(
     PillState.Discovery,
     NavOptions(
         launchSingleTop = true
     )
 )
 
-internal fun Navigator.navigateToNewPill() = navigate(
+@OptIn(ExperimentalObjCRefinement::class)
+@HiddenFromObjC
+public fun Navigator.navigateToNewPill(): Unit = navigate(
     PillState.NewPill,
     NavOptions(
         launchSingleTop = true
     )
 )
 
-@OptIn(ExperimentalAnimationApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalAnimationApi::class, ExperimentalMaterial3Api::class, ExperimentalObjCRefinement::class)
+@HiddenFromObjC
 @Composable
-internal fun SwipeToRemove(
+public fun SwipeToRemove(
     onRemoveClick: () -> Unit,
     onClick: () -> Unit,
     headlineText: @Composable () -> Unit = {},
@@ -90,6 +105,8 @@ internal fun SwipeToRemove(
     leadingContent: (@Composable () -> Unit)? = null,
     overlineText: (@Composable () -> Unit)? = null,
     removingSupporting: @Composable () -> Unit = {},
+    elevatedCardColors: CardColors = CardDefaults.elevatedCardColors(),
+    elevatedListItemColors: ListItemColors = ListItemDefaults.colors()
 ) {
     val locale = LocalLocale.current
     var remove by remember { mutableStateOf(false) }
@@ -129,9 +146,11 @@ internal fun SwipeToRemove(
             }
         } else {
             ElevatedCard(
-                onClick = onClick
+                onClick = onClick,
+                colors = elevatedCardColors
             ) {
                 ListItem(
+                    colors = elevatedListItemColors,
                     headlineText = headlineText,
                     supportingText = supportingText,
                     overlineText = overlineText,

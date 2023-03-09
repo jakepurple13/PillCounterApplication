@@ -17,7 +17,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
-internal class Network(
+public class Network(
     private val url: Url = Url("http://${BuildKonfig.serverLocalIpAddress}:8080")
 ) {
     private val json = Json {
@@ -57,14 +57,14 @@ internal class Network(
         return response.body<T>()
     }
 
-    suspend fun updateConfig(pillWeights: PillWeights) = runCatching {
+    public suspend fun updateConfig(pillWeights: PillWeights): Result<PillWeights?> = runCatching {
         postApi<PillWeights>("$url/weight") {
             contentType(ContentType.Application.Json)
             setBody(pillWeights)
         }
     }
 
-    fun socketConnection(): Flow<Result<PillCount>> = channelFlow {
+    public fun socketConnection(): Flow<Result<PillCount>> = channelFlow {
         socketSession?.close()
         socketSession = websocketClient.webSocketSession(
             method = HttpMethod.Get,
@@ -107,7 +107,7 @@ internal class Network(
         }
         .flowOn(Dispatchers.Default)
 
-    fun pillWeightCalibration(): Flow<PillWeights> = flow {
+    public fun pillWeightCalibration(): Flow<PillWeights> = flow {
         withTimeout(5000) {
             while (true) {
                 runCatching { getApi<PillWeights>("$url/pillWeight") }.getOrNull()?.let { emit(it) }
@@ -116,7 +116,7 @@ internal class Network(
         }
     }
 
-    suspend fun close() {
+    public suspend fun close() {
         client.close()
         websocketClient.close()
         socketSession?.close()

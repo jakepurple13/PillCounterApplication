@@ -32,7 +32,7 @@ internal class PillCounterServerConfig : RealmObject {
     var urlHistory: RealmSet<String> = realmSetOf()
 }
 
-public class PillWeightDatabase {
+public class PillWeightDatabase(name: String = Realm.DEFAULT_FILE_NAME) {
     private val realm by lazy {
         Realm.open(
             RealmConfiguration.Builder(
@@ -43,6 +43,7 @@ public class PillWeightDatabase {
                 )
             )
                 .schemaVersion(22)
+                .name(name)
                 .migration(AutomaticSchemaMigration { })
                 .deleteRealmIfMigrationNeeded()
                 .build()

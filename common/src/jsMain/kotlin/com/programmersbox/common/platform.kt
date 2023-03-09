@@ -1,6 +1,10 @@
 package com.programmersbox.common
 
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.material3.DrawerState
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.runtime.Composable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -80,5 +84,19 @@ public fun <T, R> BluetoothScreen(
         ssid,
         signalStrength,
         actions
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+internal actual fun DrawerType(
+    drawerState: DrawerState,
+    drawerContent: @Composable () -> Unit,
+    content: @Composable () -> Unit
+) {
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = { ModalDrawerSheet { drawerContent() } },
+        content = content
     )
 }

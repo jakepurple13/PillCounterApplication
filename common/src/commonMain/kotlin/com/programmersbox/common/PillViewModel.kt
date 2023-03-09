@@ -170,4 +170,4 @@ public enum class PillState(internal val route: String = "") {
     BluetoothDiscovery("bluetooth")
 }
 
-internal enum class ConnectionState { Idle, Error, Connected }
+public enum class ConnectionState { Idle, Error, Connected }

@@ -1,5 +1,9 @@
 package com.programmersbox.common
 
+import androidx.compose.material3.DrawerState
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.PermanentDrawerSheet
+import androidx.compose.material3.PermanentNavigationDrawer
 import androidx.compose.runtime.Composable
 import com.programmersbox.database.PillWeightDatabase
 import kotlinx.coroutines.CoroutineScope
@@ -146,7 +150,7 @@ internal actual fun DiscoveryViewModel.discover() {
 
 internal actual fun randomUUID(): String = UUID.randomUUID().toString()
 
-internal actual val hasBLEDiscovery: Boolean = true
+internal actual val hasBLEDiscovery: Boolean = false
 
 @Composable
 internal actual fun BluetoothDiscovery(viewModel: PillViewModel) {
@@ -169,5 +173,18 @@ internal actual fun BluetoothDiscovery(viewModel: PillViewModel) {
         ssid = { it?.e.orEmpty() },
         signalStrength = { it?.s ?: 0 },
         connectOverBle = vm::connect
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+internal actual fun DrawerType(
+    drawerState: DrawerState,
+    drawerContent: @Composable () -> Unit,
+    content: @Composable () -> Unit
+) {
+    PermanentNavigationDrawer(
+        drawerContent = { PermanentDrawerSheet { drawerContent() } },
+        content = content
     )
 }

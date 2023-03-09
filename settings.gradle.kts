@@ -23,6 +23,7 @@ rootProject.name = "PillCounterApplication"
 
 include(":android")
 include(":desktop")
+include(":desktopMultiDeviceSupport")
 include(":jsApp")
 include(":common")
 include(":database")

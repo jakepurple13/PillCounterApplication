@@ -266,3 +266,17 @@ internal fun NeedsPermissions(paddingValues: PaddingValues, onClick: () -> Unit)
         ) { Text(text = "Enable") }
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+internal actual fun DrawerType(
+    drawerState: DrawerState,
+    drawerContent: @Composable () -> Unit,
+    content: @Composable () -> Unit
+) {
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = { ModalDrawerSheet { drawerContent() } },
+        content = content
+    )
+}

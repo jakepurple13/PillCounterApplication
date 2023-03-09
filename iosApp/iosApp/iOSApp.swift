@@ -71,7 +71,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 retryConnection: NSLocalizedString("retryConnection", comment: ""),
                 somethingWentWrongWithTheConnection: NSLocalizedString("somethingWentWrongWithTheConnection", comment: ""),
                 connected: NSLocalizedString("connected", comment: ""),
-                id: { p in String(format: NSLocalizedString("id", comment: ""), p) },
+                id: { p in String(format: NSLocalizedString("id_info", comment: ""), p) },
                 pillName: NSLocalizedString("pillName", comment: ""),
                 save: NSLocalizedString("save", comment: ""),
                 pressToStartCalibration: NSLocalizedString("pressToStartCalibration", comment: ""),
@@ -90,7 +90,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 refreshing: NSLocalizedString("refreshing", comment: ""),
                 pullToRefresh: NSLocalizedString("pull_to_refresh", comment: ""),
                 close: NSLocalizedString("close", comment: ""),
-                pastDevices: NSLocalizedString("pastDevices", "")
+                pastDevices: NSLocalizedString("pastDevices", comment: "")
             )
         )
         window?.rootViewController = mainViewController
