@@ -1,21 +1,22 @@
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
-import com.programmersbox.common.*
+import com.programmersbox.common.ConnectionState
+import com.programmersbox.common.Network
+import com.programmersbox.common.PillCount
+import com.programmersbox.common.PillWeights
 import com.programmersbox.database.PillWeightDatabase
 import io.ktor.http.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import moe.tlaster.precompose.navigation.Navigator
 
 class MultiPillViewModel(
-    private val navigator: Navigator,
     private val viewModelScope: CoroutineScope
 ) {
-    internal val db = Database(viewModelScope)
+    internal val db = Database()
 
-    internal val network = mutableMapOf<String, NetworkInfo>()
+    internal val network = mutableStateMapOf<String, NetworkInfo>()
 
     var currentNetwork by mutableStateOf<NetworkInfo?>(null)
 
@@ -34,9 +35,6 @@ class MultiPillViewModel(
     internal val connectionError by derivedStateOf { connectedState == ConnectionState.Error }
 
     internal var showErrorBanner by mutableStateOf(false)
-
-    val urlHistory: SnapshotStateList<String> = mutableStateListOf()
-    var url: String by mutableStateOf("")
 
     init {
         snapshotFlow { connectedState }
@@ -70,15 +68,6 @@ class MultiPillViewModel(
             db.urlHistory()
                 .filter { it.isNotEmpty() }
                 .onEach { it.forEach { connectToNetwork(it) } }
-                .launchIn(this)
-        }
-
-        viewModelScope.launch {
-            db.urlHistory()
-                .onEach {
-                    urlHistory.clear()
-                    urlHistory.addAll(it)
-                }
                 .launchIn(this)
         }
     }
@@ -133,23 +122,9 @@ class MultiPillViewModel(
     internal fun removeConfig(pillWeights: PillWeights) {
         viewModelScope.launch { db.removePillWeightInfo(pillWeights) }
     }
-
-    internal fun showNewPill() {
-        navigator.navigateToNewPill()
-    }
-
-    fun showMainScreen() {
-        while (navigator.canGoBack) {
-            navigator.goBack()
-        }
-    }
-
-    internal fun showDiscovery() {
-        navigator.navigateToDiscovery()
-    }
 }
 
-class Database(scope: CoroutineScope) {
+class Database {
     private val db = PillWeightDatabase("multipill")
     suspend fun list(): Flow<List<PillCount>> = db.getItems()
         .mapNotNull { l ->

@@ -18,15 +18,9 @@ import java.util.prefs.Preferences
 
 @OptIn(ExperimentalMaterial3Api::class)
 fun main() = application {
-    //TODO: Need to add new pill screen
-    // need to add, pressing on pills and asking what devices to send the config to
-    // need to ask what devices to send config to from new pill screen
-
-    //TODO: ALSO! On the watchdog, maybe have it print the watchdog logs in a different color
-
     val scope = rememberCoroutineScope()
     val navigator = remember { Navigator() }
-    val pillViewModel = remember { MultiPillViewModel(navigator, scope) }
+    val pillViewModel = remember { MultiPillViewModel(scope) }
     val desktopViewModel = remember { DesktopViewModel() }
     var isOpen by remember { mutableStateOf(true) }
     var openPreferences by remember { mutableStateOf(false) }
@@ -36,7 +30,6 @@ fun main() = application {
         LocalNavigator provides navigator,
         LocalLocale provides desktopViewModel.locale
     ) {
-
         val trayState = rememberTrayState()
         Tray(
             state = trayState,
