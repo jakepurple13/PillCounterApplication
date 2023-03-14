@@ -78,10 +78,10 @@ kotlin {
                 api(projects.database)
                 api("org.jmdns:jmdns:3.5.8")
                 api("com.github.LeandroSQ:android-ble-made-easy:1.8.0")
-                api("androidx.lifecycle:lifecycle-viewmodel-compose:2.5.1")
+                api("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.0")
                 api("com.github.zqisheng.QsBle:ble:1.2.3")
                 api("com.github.zqisheng.QsBle:ble_coroutines:1.2.3")
-                api("com.juul.kable:core:0.21.0")
+                api("com.juul.kable:core:0.22.0")
                 api("com.google.accompanist:accompanist-permissions:0.29.1-alpha")
             }
         }
@@ -107,7 +107,7 @@ kotlin {
             dependencies {
                 api(compose.web.core)
                 api("io.ktor:ktor-client-js:$ktorVersion")
-                api("com.juul.kable:core:0.21.0")
+                api("com.juul.kable:core:0.22.0")
             }
         }
 
@@ -123,7 +123,7 @@ kotlin {
                 api("com.splendo.kaluga:bluetooth:0.5.0")
                 api("com.splendo.kaluga:permissions:0.5.0")
                  */
-                api("com.juul.kable:core:0.21.0")
+                api("com.juul.kable:core:0.22.0")
                 api("dev.bluefalcon:blue-falcon:0.10.10")
             }
             iosX64Main.dependsOn(this)
